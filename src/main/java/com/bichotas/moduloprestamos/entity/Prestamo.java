@@ -25,16 +25,14 @@ public class Prestamo {
     private ObjectId id;
 
     @NotBlank(message = "El id del estudiante no puede estar vacío")
-    private String idEstudiante;
+    private String id_estudiante;
 
     @NotBlank(message = "El id del libro no puede estar vacío")
-    private String idLibro;
+    private String id_libro;
 
-    @NotNull(message = "La fecha de préstamo no puede ser nula")
-    @PastOrPresent(message = "La fecha de préstamo no puede ser en el futuro")
-    private LocalDate fechaPrestamo;
+    private LocalDate fecha_prestamo;
 
-    private LocalDate fechaDevolucion;
+    private LocalDate fecha_devolucion;
 
     @NotBlank(message = "El estado no puede estar vacío")
     @Pattern(regexp = "Prestado|Vencido|Devuelto", message = "El estado solo puede ser Prestado, Vencido o Devuelto")
@@ -44,11 +42,11 @@ public class Prestamo {
     private String observaciones;
 
     @CreatedDate
-    private LocalDateTime fechaCreacion;
+    private LocalDateTime fecha_creacion;
 
     @Size(max = 500, message = "El historial de estado no puede exceder los 500 caracteres")
-    private String historialEstado;
+    private String historial_estado;
 
     @NotNull(message = "El usuario que creó el préstamo no puede ser nulo")
-    private String creadoPor;
+    private String creado_by;
 }
