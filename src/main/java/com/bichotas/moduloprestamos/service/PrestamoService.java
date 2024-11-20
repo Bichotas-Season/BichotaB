@@ -1,22 +1,42 @@
 package com.bichotas.moduloprestamos.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.bichotas.moduloprestamos.entity.Prestamo;
 import com.bichotas.moduloprestamos.exception.PrestamosException;
 import com.bichotas.moduloprestamos.repository.PrestamoRepository;
+
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-
+/**
+ * Service class for managing Prestamo (loan) operations.
+ * This class provides methods to create, validate, and retrieve Prestamos.
+ * It also includes methods to send email notifications and verify the availability of books and students' loan status.
+ * 
+ * @author Diego Cardenas
+ * @author Sebastian Cardona
+ * @author Zayra Gutierrez
+ * @author Andres Serrato
+ * @version 1.0
+ * @since 1.0
+ */
 @Service
 @AllArgsConstructor
 public class PrestamoService {
 
     private final PrestamoRepository prestamoRepository;
 
+    /**
+     * Creates a new Prestamo (loan) with the current date and time, performs validations,
+     * and saves it to the repository.
+     *
+     * @param prestamo the Prestamo object to be created
+     * @return the saved Prestamo object
+     */
     public Prestamo createPrestamo(Prestamo prestamo) {
         prestamo.setFecha_prestamo(LocalDate.now());
         prestamo.setFecha_creacion(LocalDateTime.now());
@@ -24,6 +44,25 @@ public class PrestamoService {
         return prestamoRepository.save(prestamo);
     }
 
+    /**
+     * Sends an email notification for the corresponding loan.
+     * This method calls an API to send the emails related to the loan.
+     * 
+     */
+    private void sendEmail(Prestamo prestamo) {
+        //TODO: Implementar
+    }
+
+    /**
+     * Validates the given Prestamo object to ensure it meets the necessary conditions
+     * for creating a new loan.
+     *
+     * @param prestamo the Prestamo object to be validated
+     * @throws PrestamosException.PrestamosExceptionEstudianteHasPrestamo if the student already has an active loan
+     * @throws PrestamosException.PrestamosExceptionBookIsAvailable if the book is not available
+     * @throws PrestamosException.PrestamosExceptionTimeError if the loan date is after the return date
+     * @throws PrestamosException.PrestamosExceptionStateError if the state is not one of "Prestado", "Vencido", or "Devuelto"
+     */
     private void createPrestamoValidations(Prestamo prestamo) {
         if (verifyIfEstudianteHasPrestamo(prestamo.getId_estudiante())) {
             throw new PrestamosException.PrestamosExceptionEstudianteHasPrestamo("El estudiante ya tiene un préstamo activo");
