@@ -105,6 +105,7 @@ public class PrestamoService {
     private boolean verifyIfBookIsAvailable(String id_libro) {
         //TODO: Implementar
         return true;
+
     }
 
     /**
