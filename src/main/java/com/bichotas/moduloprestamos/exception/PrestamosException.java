@@ -74,4 +74,30 @@ public class PrestamosException extends RuntimeException {
             super(message);
         }
     }
+
+    /**
+     * Represents an exception indicanding that a prestamo id does not exist.
+     */
+    public static class PrestamosExceptionPrestamoIdNotFound extends PrestamosException {
+        /**
+         * Constructs a new PrestamosExceptionPrestamoIdNotFound with the specified detail message.
+         *
+         * @param message the detail message for the exception.
+         */
+        public PrestamosExceptionPrestamoIdNotFound(String message) { super(message);}
+    }
+
+    /**
+     * Represents an exception indicating that a book by its isbn its does not in state prestado.
+     */
+    public static class PrestamosExceptionBookIsNotPrestado extends PrestamosException {
+        /**
+         * Constructs a new PrestamosExceptionBookIsNotPrestado with the specified detail message.
+         *
+         * @param message the detail message for the exception.
+         */
+        public PrestamosExceptionBookIsNotPrestado(String message) {
+            super(message);
+        }
+    }
 }

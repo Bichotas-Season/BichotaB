@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bichotas.moduloprestamos.entity.Prestamo;
@@ -25,10 +26,16 @@ import lombok.AllArgsConstructor;
  * @since 1.0
  */
 @Service
-@AllArgsConstructor
 public class PrestamoService {
 
     private final PrestamoRepository prestamoRepository;
+    private List<Prestamo> prestamos;
+
+    @Autowired
+    public PrestamoService(PrestamoRepository prestamoRepository) {
+        this.prestamoRepository = prestamoRepository;
+        this.prestamos = prestamoRepository.findAll();
+    }
 
     /**
      * Creates a new Prestamo (loan) with the current date and time, performs validations,
@@ -38,8 +45,8 @@ public class PrestamoService {
      * @return the saved Prestamo object
      */
     public Prestamo createPrestamo(Prestamo prestamo) {
-        prestamo.setFecha_prestamo(LocalDate.now());
-        prestamo.setFecha_creacion(LocalDateTime.now());
+        prestamo.setFechaPrestamo(LocalDate.now());
+        prestamo.setFechaCreacion(LocalDateTime.now());
         createPrestamoValidations(prestamo);
         return prestamoRepository.save(prestamo);
     }
@@ -64,13 +71,13 @@ public class PrestamoService {
      * @throws PrestamosException.PrestamosExceptionStateError if the state is not one of "Prestado", "Vencido", or "Devuelto"
      */
     private void createPrestamoValidations(Prestamo prestamo) {
-        if (verifyIfEstudianteHasPrestamo(prestamo.getId_estudiante())) {
+        if (verifyIfEstudianteHasPrestamo(prestamo.getIdEstudiante())) {
             throw new PrestamosException.PrestamosExceptionEstudianteHasPrestamo("El estudiante ya tiene un préstamo activo");
         }
-        if (!verifyIfBookIsAvailable(prestamo.getId_libro())) {
+        if (!verifyIfBookIsAvailable(prestamo.getIdLibro())) {
             throw new PrestamosException.PrestamosExceptionBookIsAvailable("El libro no está disponible");
         }
-        if (prestamo.getFecha_devolucion() != null && prestamo.getFecha_prestamo().isAfter(prestamo.getFecha_devolucion())) {
+        if (prestamo.getFechaDevolucion() != null && prestamo.getFechaPrestamo().isAfter(prestamo.getFechaDevolucion())) {
             throw new PrestamosException.PrestamosExceptionTimeError("La fecha de préstamo no puede ser después de la fecha de devolución");
         }
         if (!prestamo.getEstado().matches("Prestado|Vencido|Devuelto")) {
@@ -106,7 +113,7 @@ public class PrestamoService {
      * @return a list of all Prestamos
      */
     public List<Prestamo> getPrestamos() {
-        return prestamoRepository.findAll();
+        return prestamos;
     }
 
     /**
@@ -115,12 +122,41 @@ public class PrestamoService {
      * @return a list of Prestamos with status "Prestado"
      */
     public List<Prestamo> getPrestamosWithStatusIsPrestado() {
-        List<Prestamo> prestamos = prestamoRepository.findAll();
-        List<Prestamo> prestamosPrestados = prestamos.stream()
+        return prestamos.stream()
                 .filter(prestamo -> prestamo.getEstado().equals("Prestado"))
                 .toList();
-        return prestamosPrestados;
     }
+
+    /**
+     * Retrieves a prestamo by its ID.
+     *
+     * @param id the ID of the prestamo
+     * @return the prestamo with the given ID
+     */
+    public Prestamo getPrestamoById(String id) {
+        return prestamos.stream()
+                .filter(p -> p.getId().toString().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new PrestamosException.PrestamosExceptionPrestamoIdNotFound("El préstamo con el id " + id + " no existe"));
+    }
+
+    /**
+     * retrieves all prestamos by the isbn of the book
+     * @param isbn the isbn of the book
+     * @return the prestamos with the given isbn or throws an exception if the book does not exist
+     */
+    public List<Prestamo> getPrestamosByIsbn(String isbn) {
+        List<Prestamo> prestamosFiltrados = prestamos.stream()
+                .filter(p -> p.getIdLibro().equals(isbn))
+                .toList();
+
+        if (prestamosFiltrados.isEmpty()) {
+            throw new PrestamosException.PrestamosExceptionBookIsAvailable("El libro con el ISBN " + isbn + " no ha sido prestado o no existe");
+        }
+
+        return prestamosFiltrados;
+    }
+
 }
 
 

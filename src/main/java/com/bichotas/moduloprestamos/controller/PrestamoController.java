@@ -22,9 +22,13 @@ import java.util.Collections;
 )
 public class PrestamoController {
 
-    @Autowired
-    private PrestamoService prestamoService;
 
+    private final PrestamoService prestamoService;
+
+    @Autowired
+    public PrestamoController(PrestamoService prestamoService) {
+        this.prestamoService = prestamoService;
+    }
 
     @PostMapping
     @Operation(
@@ -161,5 +165,23 @@ public class PrestamoController {
     public ResponseEntity<?> getLibrosDisponibles(){
         //TODO: Implementar
         return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("libros", "libros disponibles"));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPrestamoById(@PathVariable String id) {
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamo", prestamoService.getPrestamoById(id)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/libro/{isbn}")
+    public ResponseEntity<?> getPrestamosByIsbn(@PathVariable String isbn){
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamosByIsbn(isbn)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
+        }
     }
 }
