@@ -184,4 +184,23 @@ public class PrestamoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/estudiante/{id}")
+    public ResponseEntity<?> getPrestamosByEstudiante(@PathVariable String id){
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamosByIdEstudiante(id)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/delete-{id}")
+    public ResponseEntity<?> deletePrestamo(@PathVariable String id){
+        try{
+            prestamoService.deletePrestamoById(id);
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Prestamo eliminado correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
 }

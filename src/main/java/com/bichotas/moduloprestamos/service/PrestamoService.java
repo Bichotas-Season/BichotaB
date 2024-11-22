@@ -158,6 +158,41 @@ public class PrestamoService {
         return prestamosFiltrados;
     }
 
+    /**
+     * Retrieves all prestamos by the id of the student
+     * @param id the id of the student
+     * @return the prestamos with the given id or throws an exception if the student does not exist
+     */
+    public List<Prestamo> getPrestamosByIdEstudiante(String id) {
+        List<Prestamo> prestamosFiltrados = prestamos.stream()
+                .filter(p -> p.getIdEstudiante().equals(id))
+                .toList();
+
+        if (prestamosFiltrados.isEmpty()) {
+            throw new PrestamosException.PrestamosExceptionEstudianteHasNotPrestamo("El estudiante con el id " + id + " no tiene préstamos o no existe.");
+        }
+
+        return prestamosFiltrados;
+    }
+
+    /**
+     * Delete a prestamo by its ID if it has not been returned or is not overdue.
+     * @param id the ID of the prestamo
+     * @return the prestamo deleted
+     */
+    public Prestamo deletePrestamoById(String id) {
+        Prestamo prestamo = getPrestamoById(id);
+        if (prestamo.getEstado().equals("Devuelto")) {
+            throw new PrestamosException.PrestamosExceptionStateError("El préstamo ya ha sido devuelto");
+        } else if (prestamo.getEstado().equals("Vencido")) {
+            throw new PrestamosException.PrestamosExceptionStateError("El préstamo está vencido");
+        }else{
+            prestamoRepository.deleteById(prestamo.getId());
+            return prestamo;
+        }
+
+    }
+
 }
 
 

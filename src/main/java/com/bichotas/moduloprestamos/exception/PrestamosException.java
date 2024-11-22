@@ -100,4 +100,19 @@ public class PrestamosException extends RuntimeException {
             super(message);
         }
     }
+
+    /**
+     * Represents an exception indicating that a students by its id does not have a prestamo.
+     *
+     */
+    public static class PrestamosExceptionEstudianteHasNotPrestamo extends PrestamosException {
+        /**
+         * Constructs a new PrestamosExceptionEstudianteHasNotPrestamo with the specified detail message.
+         *
+         * @param message the detail message for the exception.
+         */
+        public PrestamosExceptionEstudianteHasNotPrestamo(String message) {
+            super(message);
+        }
+    }
 }
