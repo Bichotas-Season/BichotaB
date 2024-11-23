@@ -40,8 +40,8 @@ The **Module Loans** API manages the loan and return process for books in a libr
 ---
 
 ## Technologies
-- **Java 17**
-- **Spring Boot 3.0**
+- **Java 21**
+- **Spring Boot 3.3.5**
 - **MongoDB**: For loan persistence.
 - **Swagger/OpenAPI**: For API documentation.
 - **Docker** (optional): For deployment and containerization.
@@ -51,7 +51,7 @@ The **Module Loans** API manages the loan and return process for books in a libr
 ## Getting Started
 
 ### Prerequisites
-1. Java 17 or higher
+1. Java 21 or higher
 2. MongoDB instance running locally or remotely
 3. Maven 3.x for dependency management
 
@@ -59,19 +59,22 @@ The **Module Loans** API manages the loan and return process for books in a libr
 1. Clone the repository:
    ```bash
    git clone https://github.com/Bichotas-Season/BichotaB
-   cd moduloprestamos
+   cd BichotaB
+   ```
 
 2. Update the environment variables in the application.properties file. For example:
     ```bash
     FRONTEND_URL=http://your-frontend-url.com
     SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/modulo_prestamos
+    ```
 
 3. Run the application:
     ```bash
     mvn spring-boot:run
+    ```
 
 4. Access the API documentation:
-    * Swagger URL: https://app.swaggerhub.com/apis-docs/DIEGOSP778/modulo-prestamos_api/1.0#/
+    * [Swagger URL](https://app.swaggerhub.com/apis-docs/DIEGOSP778/modulo-prestamos_api/1.0#/)
 
 ## Endpoints
 

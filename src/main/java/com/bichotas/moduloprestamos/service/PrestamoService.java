@@ -52,6 +52,7 @@ public class PrestamoService {
         prestamo.setFechaPrestamo(LocalDate.now());
         prestamo.setFechaCreacion(LocalDateTime.now());
         createPrestamoValidations(prestamo);
+        sendEmail(prestamo);
         return prestamoRepository.save(prestamo);
     }
 
