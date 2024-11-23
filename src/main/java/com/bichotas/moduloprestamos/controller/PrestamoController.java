@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 
 @RestController
@@ -346,4 +348,52 @@ public class PrestamoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
+
+    @PutMapping("/update-{id}")
+    @Operation(
+            summary = "Actualizar un atributo del préstamo",
+            description = "Actualiza un atributo específico del préstamo, excepto si el préstamo está en estado de vencido o devuelto",
+            tags = {"Prestamos"},
+            parameters = {
+                    @io.swagger.v3.oas.annotations.Parameter(
+                            name = "id",
+                            description = "ID del préstamo a actualizar",
+                            required = true,
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string")
+                    )
+            },
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Préstamo actualizado correctamente"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "400",
+                            description = "Solicitud incorrecta"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "404",
+                            description = "Préstamo no encontrado"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "500",
+                            description = "Error interno del servidor"
+                    )
+            }
+    )
+
+    public ResponseEntity<?> updatePrestamo(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        try {
+            prestamoService.updatePrestamo(id, updates);
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Prestamo actualizado correctamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
 }
