@@ -13,8 +13,8 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class CorsConfig {
     
-    @Value("${FRONTEND_URL}")
-    private String frontendUrl;
+
+    private String frontendUrl = "*";
 
     @Bean
     public CorsFilter corsFilter() {
