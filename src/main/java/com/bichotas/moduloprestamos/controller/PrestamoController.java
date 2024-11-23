@@ -382,7 +382,6 @@ public class PrestamoController {
                     )
             }
     )
-
     public ResponseEntity<?> updatePrestamo(@PathVariable String id, @RequestBody Map<String, Object> updates) {
         try {
             prestamoService.updatePrestamo(id, updates);
@@ -395,5 +394,4 @@ public class PrestamoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
         }
     }
-
 }
