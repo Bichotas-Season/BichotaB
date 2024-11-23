@@ -13,6 +13,12 @@ jobs:
   build:
     runs-on: windows-latest
 
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+      MONGODB_PORT: ${{ secrets.MONGODB_PORT }}
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -45,7 +51,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: java-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
