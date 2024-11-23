@@ -9,7 +9,8 @@ import io.swagger.v3.oas.annotations.info.Contact;
                 version = "1.0",
                 description = "API para el módulo de préstamos de la biblioteca",
                 contact = @Contact(
-                        name = "Bichotas TEAM"
+                        name = "Bichotas TEAM",
+                        url = "https://github.com/Bichotas-Season/BichotaB"
                         )
         )
 )
