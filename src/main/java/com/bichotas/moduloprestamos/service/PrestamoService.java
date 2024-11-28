@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,12 +34,10 @@ import lombok.AllArgsConstructor;
 public class PrestamoService {
 
     private final PrestamoRepository prestamoRepository;
-    private List<Prestamo> prestamos;
 
     @Autowired
     public PrestamoService(PrestamoRepository prestamoRepository) {
         this.prestamoRepository = prestamoRepository;
-        this.prestamos = prestamoRepository.findAll();
     }
 
     /**
@@ -109,7 +108,6 @@ public class PrestamoService {
     private boolean verifyIfBookIsAvailable(String id_libro) {
         //TODO: Implementar
         return true;
-
     }
 
     /**
@@ -118,7 +116,7 @@ public class PrestamoService {
      * @return a list of all Prestamos
      */
     public List<Prestamo> getPrestamos() {
-        return prestamos;
+        return prestamoRepository.findAll();
     }
 
     /**
@@ -127,9 +125,9 @@ public class PrestamoService {
      * @return a list of Prestamos with status "Prestado"
      */
     public List<Prestamo> getPrestamosWithStatusIsPrestado() {
-        return prestamos.stream()
+        return getPrestamos().stream()
                 .filter(prestamo -> prestamo.getEstado().equals("Prestado"))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
@@ -139,7 +137,7 @@ public class PrestamoService {
      * @return the prestamo with the given ID
      */
     public Prestamo getPrestamoById(String id) {
-        return prestamos.stream()
+        return getPrestamos().stream()
                 .filter(p -> p.getId().toString().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new PrestamosException.PrestamosExceptionPrestamoIdNotFound("El préstamo con el id " + id + " no existe"));
@@ -152,14 +150,13 @@ public class PrestamoService {
      * @return the prestamos with the given isbn or throws an exception if the book does not exist
      */
     public List<Prestamo> getPrestamosByIsbn(String isbn) {
-        List<Prestamo> prestamosFiltrados = prestamos.stream()
-                .filter(p -> p.getIdLibro().equals(isbn))
-                .toList();
-
+        List<Prestamo> prestamosFiltrados =
+                getPrestamos().stream()
+                        .filter(p -> p.getIdLibro().equals(isbn))
+                        .toList();
         if (prestamosFiltrados.isEmpty()) {
             throw new PrestamosException.PrestamosExceptionBookIsAvailable("El libro con el ISBN " + isbn + " no ha sido prestado o no existe");
         }
-
         return prestamosFiltrados;
     }
 
@@ -170,14 +167,14 @@ public class PrestamoService {
      * @return the prestamos with the given id or throws an exception if the student does not exist
      */
     public List<Prestamo> getPrestamosByIdEstudiante(String id) {
-        List<Prestamo> prestamosFiltrados = prestamos.stream()
-                .filter(p -> p.getIdEstudiante().equals(id))
-                .toList();
+        List<Prestamo> prestamosFiltrados =
+                getPrestamos().stream()
+                        .filter(p -> p.getIdEstudiante().equals(id))
+                        .toList();
 
         if (prestamosFiltrados.isEmpty()) {
             throw new PrestamosException.PrestamosExceptionEstudianteHasNotPrestamo("El estudiante con el id " + id + " no tiene préstamos o no existe.");
         }
-
         return prestamosFiltrados;
     }
 
@@ -197,7 +194,6 @@ public class PrestamoService {
             prestamoRepository.deleteById(prestamo.getId());
             return prestamo;
         }
-
     }
 
     /**
@@ -210,13 +206,11 @@ public class PrestamoService {
      */
     public void updatePrestamo(String id, Map<String, Object> updates) {
         Prestamo prestamo = getPrestamoById(id);
-
         if ("vencido".equals(prestamo.getEstado()) || "devuelto".equals(prestamo.getEstado())) {
             if (!updates.containsKey("historial_estado")) {
                 throw new IllegalArgumentException("No se puede actualizar el préstamo en estado vencido o devuelto, excepto el historial del ejemplar");
             }
         }
-
         updates.forEach((key, value) -> {
             switch (key) {
                 case "observaciones":
@@ -243,7 +237,6 @@ public class PrestamoService {
                     throw new IllegalArgumentException("Atributo no válido: " + key);
             }
         });
-
         prestamoRepository.save(prestamo);
     }
 }
