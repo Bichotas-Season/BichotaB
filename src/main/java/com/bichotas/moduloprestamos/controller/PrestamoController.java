@@ -312,7 +312,7 @@ public class PrestamoController {
         }
     }
 
-    @DeleteMapping("/delete-{id}")
+    @DeleteMapping("/{id}/delete")
     @Operation(
             summary = "Eliminar préstamo",
             description = "Elimina un préstamo específico usando su ID",
@@ -350,7 +350,7 @@ public class PrestamoController {
     }
 
 
-    @PutMapping("/update-{id}")
+    @PutMapping("/{id}/update")
     @Operation(
             summary = "Actualizar un atributo del préstamo",
             description = "Actualiza un atributo específico del préstamo, excepto si el préstamo está en estado de vencido o devuelto",
