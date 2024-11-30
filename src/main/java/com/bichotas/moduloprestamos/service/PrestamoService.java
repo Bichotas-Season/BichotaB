@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import com.bichotas.moduloprestamos.entity.dto.DevolucionDTO;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -238,6 +240,43 @@ public class PrestamoService {
             }
         });
         prestamoRepository.save(prestamo);
+    }
+
+    public Prestamo devolverPrestamo(ObjectId prestamoId, String estado) {
+        Prestamo prestamo = prestamoRepository.findById(prestamoId).orElseThrow(() -> new NoSuchElementException("No se encontró el préstamo con el id " + prestamoId));
+        prestamo.setEstado("Devuelto");
+        prestamo.setHistorialEstado(estado);
+        prestamo.setFechaDevolucion(LocalDate.now());
+        //TODO: Implementar se implementa la peticion a la api de envio de correos
+        prestamoRepository.save(prestamo);
+
+        boolean estadoHistory = getEstadoHistory(prestamo.getIdLibro(), estado);
+
+        DevolucionDTO devolucionDTO = DevolucionDTO.builder()
+                .userId(prestamo.getIdEstudiante())
+                .emailGuardian("")
+                .bookId(prestamo.getIdLibro())
+                .bookName("")
+                .loanReturn(estadoHistory).build();
+
+        return prestamo;
+    }
+
+    private boolean getEstadoHistory(String idLibro, String estado){
+        List<Prestamo> prestamos = prestamoRepository.getPrestamosByIdLibro(idLibro);
+        Prestamo prestamo;
+        if(prestamos.size() == 0) return false;
+        prestamo = prestamos.get(0);
+        for (int i = 1; i < prestamos.size(); i++) {
+            if(prestamos.get(i).getFechaPrestamo().isAfter(prestamo.getFechaPrestamo())){
+                prestamo = prestamos.get(i);
+            }
+        }
+        if(prestamo.getHistorialEstado().equals(estado)){
+            return false;
+        } else {
+            return true;
+        }
     }
 }
 
