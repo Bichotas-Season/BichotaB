@@ -97,4 +97,15 @@ class PrestamoServiceTest {
         assertEquals("Prestado", prestamosWithStatusPrestado.get(0).getEstado());
         assertEquals("Prestado", prestamosWithStatusPrestado.get(1).getEstado());
     }
+
+    @Test
+    public void shouldThrowExceptionWhenPrestamoNotFound() {
+        when(prestamoRepository.findById(any())).thenReturn(java.util.Optional.empty());
+
+        assertThrows(PrestamosException.PrestamosExceptionPrestamoIdNotFound.class, () -> {
+            prestamoService.deletePrestamoById("123");
+        });
+    }
+
+
 }

@@ -32,6 +32,11 @@ public class PrestamoController {
         this.prestamoService = prestamoService;
     }
 
+    /**
+     * create a new prestamo with the details provided
+     * @param prestamo
+     * @return
+     */
     @PostMapping
     @Operation(
             method = "POST",
@@ -140,7 +145,10 @@ public class PrestamoController {
         }
     }
 
-
+    /**
+     * get all prestamos in the system
+     * @return
+     */
     @GetMapping
     @Operation(
             summary = "Obtener todos los prestamos",
@@ -165,7 +173,10 @@ public class PrestamoController {
         }
     }
 
-
+    /**
+     * get all prestamos with status is prestado
+     * @return
+     */
     @GetMapping("/prestamos-prestados")
     @Operation(
             summary = "Obtener préstamos en estado prestado",
@@ -191,6 +202,10 @@ public class PrestamoController {
         return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("Prestamos", prestamoService.getPrestamosWithStatusIsPrestado()));
     }
 
+    /**
+     * get all available books
+     * @return
+     */
     @GetMapping("/libros-disponibles")
     @Operation(
             summary = "Obtener libros disponibles",
@@ -212,6 +227,11 @@ public class PrestamoController {
         return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("libros", "libros disponibles"));
     }
 
+    /**
+     *Get the details of a specific prestamos using its ID
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
     @Operation(
             summary = "Obtener préstamo por ID",
@@ -248,6 +268,11 @@ public class PrestamoController {
         }
     }
 
+    /**
+     * Get all prestamos associated with a specific book using its ISBN
+     * @param isbn
+     * @return
+     */
     @GetMapping("/libro/{isbn}")
     @Operation(
             summary = "Obtener préstamos por ISBN del libro",
@@ -280,6 +305,11 @@ public class PrestamoController {
         }
     }
 
+    /**
+     * get prestamos by id estudiante
+     * @param id
+     * @return
+     */
     @GetMapping("/estudiante/{id}")
     @Operation(
             summary = "Obtener préstamos por ID de estudiante",
@@ -312,6 +342,11 @@ public class PrestamoController {
         }
     }
 
+    /**
+     * delete prestamo by id
+     * @param id
+     * @return
+     */
     @DeleteMapping("/{id}/delete")
     @Operation(
             summary = "Eliminar préstamo",
@@ -340,6 +375,7 @@ public class PrestamoController {
                     )
             }
     )
+
     public ResponseEntity<?> deletePrestamo(@PathVariable String id) {
         try {
             prestamoService.deletePrestamoById(id);
@@ -350,7 +386,13 @@ public class PrestamoController {
     }
 
 
-    @PutMapping("/{id}/update")
+    /**
+     * update prestamo by id except if the prestamo is vencido or devuelto
+     * @param id
+     * @param updates
+     * @return
+     */
+    @PatchMapping("/{id}/update")
     @Operation(
             summary = "Actualizar un atributo del préstamo",
             description = "Actualiza un atributo específico del préstamo, excepto si el préstamo está en estado de vencido o devuelto",
@@ -382,6 +424,8 @@ public class PrestamoController {
                     )
             }
     )
+
+
     public ResponseEntity<?> updatePrestamo(@PathVariable String id, @RequestBody Map<String, Object> updates) {
         try {
             prestamoService.updatePrestamo(id, updates);
