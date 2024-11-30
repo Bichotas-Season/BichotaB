@@ -107,5 +107,123 @@ class PrestamoServiceTest {
         });
     }
 
+    @Test
+    public void shouldGetPrestamos(){
+        Prestamo prestamo1 = new Prestamo();
+        prestamo1.setIdEstudiante("123");
+        prestamo1.setIdLibro("456");
+        prestamo1.setEstado("Prestado");
 
+        Prestamo prestamo2 = new Prestamo();
+        prestamo2.setIdEstudiante("1233");
+        prestamo2.setIdLibro("4564");
+        prestamo2.setEstado("Prestado");
+
+        when(prestamoRepository.findAll()).thenReturn(List.of(prestamo1, prestamo2));
+
+        List<Prestamo> prestamos = prestamoService.getPrestamos();
+
+        assertEquals(2, prestamos.size());
+        assertEquals("Prestado", prestamos.get(0).getEstado());
+        assertEquals("Prestado", prestamos.get(1).getEstado());
+    }
+
+    @Test
+    public void shouldGetPrestamoByIdSuccess() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setId(new org.bson.types.ObjectId());
+        prestamo.setIdEstudiante("123");
+        prestamo.setIdLibro("456");
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findAll()).thenReturn(List.of(prestamo));
+
+        Prestamo result = prestamoService.getPrestamoById(prestamo.getId().toString());
+
+        assertNotNull(result);
+        assertEquals("Prestado", result.getEstado());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPrestamoIdNotFound() {
+        when(prestamoRepository.findAll()).thenReturn(List.of());
+
+        assertThrows(PrestamosException.PrestamosExceptionPrestamoIdNotFound.class, () -> {
+            prestamoService.getPrestamoById("123");
+        });
+    }
+
+    @Test
+    public void shouldGetPrestamosByIsbnSuccess() {
+        Prestamo prestamo1 = new Prestamo();
+        prestamo1.setIdEstudiante("123");
+        prestamo1.setIdLibro("isbn123");
+        prestamo1.setEstado("Prestado");
+
+        Prestamo prestamo2 = new Prestamo();
+        prestamo2.setIdEstudiante("456");
+        prestamo2.setIdLibro("isbn123");
+        prestamo2.setEstado("Devuelto");
+
+        when(prestamoRepository.findAll()).thenReturn(List.of(prestamo1, prestamo2));
+
+        List<Prestamo> result = prestamoService.getPrestamosByIsbn("isbn123");
+
+        assertEquals(2, result.size());
+        assertEquals("isbn123", result.get(0).getIdLibro());
+        assertEquals("isbn123", result.get(1).getIdLibro());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenIsbnNotFound() {
+        when(prestamoRepository.findAll()).thenReturn(List.of());
+
+        assertThrows(PrestamosException.PrestamosExceptionBookIsAvailable.class, () -> {
+            prestamoService.getPrestamosByIsbn("isbn123");
+        });
+    }
+
+    @Test
+    public void shouldGetPrestamosByIdEstudianteSuccess() {
+        Prestamo prestamo1 = new Prestamo();
+        prestamo1.setIdEstudiante("123");
+        prestamo1.setIdLibro("456");
+        prestamo1.setEstado("Prestado");
+
+        Prestamo prestamo2 = new Prestamo();
+        prestamo2.setIdEstudiante("123");
+        prestamo2.setIdLibro("789");
+        prestamo2.setEstado("Devuelto");
+
+        when(prestamoRepository.findAll()).thenReturn(List.of(prestamo1, prestamo2));
+
+        List<Prestamo> result = prestamoService.getPrestamosByIdEstudiante("123");
+
+        assertEquals(2, result.size());
+        assertEquals("123", result.get(0).getIdEstudiante());
+        assertEquals("123", result.get(1).getIdEstudiante());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenEstudianteIdNotFound() {
+        when(prestamoRepository.findAll()).thenReturn(List.of());
+
+        assertThrows(PrestamosException.PrestamosExceptionEstudianteHasNotPrestamo.class, () -> {
+            prestamoService.getPrestamosByIdEstudiante("123");
+        });
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenNoPrestamosWithGivenEstudianteId() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setIdEstudiante("456");
+        prestamo.setIdLibro("789");
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findAll()).thenReturn(List.of(prestamo));
+
+        assertThrows(PrestamosException.PrestamosExceptionEstudianteHasNotPrestamo.class, () -> {
+            prestamoService.getPrestamosByIdEstudiante("123");
+        });
+    }
 }
