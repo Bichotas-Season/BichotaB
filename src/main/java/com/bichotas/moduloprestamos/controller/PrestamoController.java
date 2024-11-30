@@ -6,6 +6,7 @@ import com.bichotas.moduloprestamos.service.PrestamoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -386,6 +387,19 @@ public class PrestamoController {
         try {
             prestamoService.updatePrestamo(id, updates);
             return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Prestamo actualizado correctamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    public ResponseEntity<?> devolverPrestamo(@PathVariable ObjectId prestamoId, @PathVariable String estado){
+        try {
+            prestamoService.devolverPrestamo(prestamoId, estado);
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Prestamo devuelto correctamente"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
         } catch (NoSuchElementException e) {
