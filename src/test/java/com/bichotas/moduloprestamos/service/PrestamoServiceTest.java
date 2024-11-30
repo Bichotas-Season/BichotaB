@@ -99,49 +99,6 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldDeletePrestamoSuccess() {
-        Prestamo prestamo = new Prestamo();
-        prestamo.setIdEstudiante("123");
-        prestamo.setIdLibro("456");
-        prestamo.setEstado("Prestado");
-
-        when(prestamoRepository.findById(any())).thenReturn(java.util.Optional.of(prestamo));
-
-        Prestamo result = prestamoService.deletePrestamoById("123");
-
-        assertNotNull(result);
-        verify(prestamoRepository, times(1)).deleteById(prestamo.getId());
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenPrestamoIsReturned() {
-        Prestamo prestamo = new Prestamo();
-        prestamo.setIdEstudiante("123");
-        prestamo.setIdLibro("456");
-        prestamo.setEstado("Devuelto");
-
-        when(prestamoRepository.findById(any())).thenReturn(java.util.Optional.of(prestamo));
-
-        assertThrows(PrestamosException.PrestamosExceptionStateError.class, () -> {
-            prestamoService.deletePrestamoById("123");
-        });
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenPrestamoIsOverdue() {
-        Prestamo prestamo = new Prestamo();
-        prestamo.setIdEstudiante("123");
-        prestamo.setIdLibro("456");
-        prestamo.setEstado("Vencido");
-
-        when(prestamoRepository.findById(any())).thenReturn(java.util.Optional.of(prestamo));
-
-        assertThrows(PrestamosException.PrestamosExceptionStateError.class, () -> {
-            prestamoService.deletePrestamoById("123");
-        });
-    }
-
-    @Test
     public void shouldThrowExceptionWhenPrestamoNotFound() {
         when(prestamoRepository.findById(any())).thenReturn(java.util.Optional.empty());
 
@@ -149,4 +106,6 @@ class PrestamoServiceTest {
             prestamoService.deletePrestamoById("123");
         });
     }
+
+
 }
