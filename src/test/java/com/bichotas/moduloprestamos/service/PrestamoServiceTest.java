@@ -91,7 +91,7 @@ class PrestamoServiceTest {
 
         when(prestamoRepository.findAll()).thenReturn(List.of(prestamo1, prestamo2));
 
-        List<Prestamo> prestamosWithStatusPrestado = prestamoService.getPrestamosWithStatusIsPrestado();
+        List<Prestamo> prestamosWithStatusPrestado = prestamoService.getPrestamos("Prestado");
 
         assertEquals(2, prestamosWithStatusPrestado.size());
         assertEquals("Prestado", prestamosWithStatusPrestado.get(0).getEstado());
@@ -121,7 +121,7 @@ class PrestamoServiceTest {
 
         when(prestamoRepository.findAll()).thenReturn(List.of(prestamo1, prestamo2));
 
-        List<Prestamo> prestamos = prestamoService.getPrestamos();
+        List<Prestamo> prestamos = prestamoService.getPrestamos(null);
 
         assertEquals(2, prestamos.size());
         assertEquals("Prestado", prestamos.get(0).getEstado());

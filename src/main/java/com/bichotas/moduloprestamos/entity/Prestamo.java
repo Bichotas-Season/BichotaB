@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @Document(collection = "prestamo")
 public class Prestamo {
     @Id
-    private ObjectId id;
+    private String id;
 
     @NotBlank(message = "El id del estudiante no puede estar vacío")
     private String idEstudiante;
@@ -50,3 +50,4 @@ public class Prestamo {
     @NotNull(message = "El usuario que creó el préstamo no puede ser nulo")
     private String creadoBy;
 }
+
