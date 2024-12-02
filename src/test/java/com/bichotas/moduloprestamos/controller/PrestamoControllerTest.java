@@ -9,14 +9,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
-public class PrestamoControllerTest {
+class PrestamoControllerTest {
 
     @Mock
     private PrestamoService prestamoService;
@@ -30,7 +28,7 @@ public class PrestamoControllerTest {
     }
 
     @Test
-    public void shouldReturnAllPrestamos() {
+    void shouldReturnAllPrestamos() {
         Prestamo prestamo1 = new Prestamo();
         prestamo1.setIdEstudiante("123");
         prestamo1.setIdLibro("456");
@@ -50,5 +48,92 @@ public class PrestamoControllerTest {
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(Collections.singletonMap("prestamos", prestamos), response.getBody());
+    }
+
+
+    @Test
+    void shouldReturnPrestamoById() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setId("1");
+        prestamo.setIdEstudiante("123");
+        prestamo.setIdLibro("456");
+        prestamo.setEstado("Prestado");
+
+        when(prestamoService.getPrestamoById("1")).thenReturn(prestamo);
+
+        ResponseEntity<?> response = prestamoController.getPrestamoById("1");
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("prestamo", prestamo), response.getBody());
+    }
+
+
+    @Test
+    void shouldReturnPrestamosByIsbn() {
+        Prestamo prestamo1 = new Prestamo();
+        prestamo1.setIdEstudiante("123");
+        prestamo1.setIdLibro("456");
+        prestamo1.setEstado("Prestado");
+
+        Prestamo prestamo2 = new Prestamo();
+        prestamo2.setIdEstudiante("789");
+        prestamo2.setIdLibro("456");
+        prestamo2.setEstado("Devuelto");
+
+        List<Prestamo> prestamos = List.of(prestamo1, prestamo2);
+
+        when(prestamoService.getPrestamosByIsbn("456")).thenReturn(prestamos);
+
+        ResponseEntity<?> response = prestamoController.getPrestamosByIsbn("456");
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("prestamos", prestamos), response.getBody());
+    }
+
+    @Test
+    void shouldReturnPrestamosByEstudianteId() {
+        Prestamo prestamo1 = new Prestamo();
+        prestamo1.setIdEstudiante("123");
+        prestamo1.setIdLibro("456");
+        prestamo1.setEstado("Prestado");
+
+        Prestamo prestamo2 = new Prestamo();
+        prestamo2.setIdEstudiante("123");
+        prestamo2.setIdLibro("789");
+        prestamo2.setEstado("Devuelto");
+
+        List<Prestamo> prestamos = List.of(prestamo1, prestamo2);
+
+        when(prestamoService.getPrestamosByIdEstudiante("123")).thenReturn(prestamos);
+
+        ResponseEntity<?> response = prestamoController.getPrestamosByEstudiante("123");
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("prestamos", prestamos), response.getBody());
+    }
+
+
+    @Test
+    void shouldUpdatePrestamoById() {
+        Map<String, Object> updates = Map.of("estado", "Devuelto");
+
+        doNothing().when(prestamoService).updatePrestamo("1", updates);
+
+        ResponseEntity<?> response = prestamoController.updatePrestamo("1", updates);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("message", "Prestamo actualizado correctamente"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingNonExistentPrestamo() {
+        Map<String, Object> updates = Map.of("estado", "Devuelto");
+
+        doThrow(new NoSuchElementException("Prestamo not found")).when(prestamoService).updatePrestamo("1", updates);
+
+        ResponseEntity<?> response = prestamoController.updatePrestamo("1", updates);
+
+        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "Prestamo not found"), response.getBody());
     }
 }

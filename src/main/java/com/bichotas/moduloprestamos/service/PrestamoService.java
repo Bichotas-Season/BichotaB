@@ -5,9 +5,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +28,8 @@ import com.bichotas.moduloprestamos.repository.PrestamoRepository;
 @Service
 public class PrestamoService {
 
+    private static final String VENCIDO = "Vencido";
+    private static final String DEVUELTO = "Devuelto";
     private final PrestamoRepository prestamoRepository;
 
     @Autowired
@@ -126,9 +125,9 @@ public class PrestamoService {
             switch (estado) {
                 case "Prestado":
                     return getPrestamosPrestado();
-                case "Vencido":
+                case VENCIDO:
                     return getPrestamosVencido();
-                case "Devuelto":
+                case DEVUELTO:
                     return getPrestamosDevuelto();
                 default:
                     throw new PrestamosException.PrestamosExceptionStateError("El estado solo puede ser Prestado, Vencido o Devuelto");
@@ -160,7 +159,7 @@ public class PrestamoService {
      * @return a list of {@link Prestamo} objects with the status "Vencido".
      */
     private List<Prestamo> getPrestamosVencido() {
-        return prestamoRepository.findByEstado("Vencido");
+        return prestamoRepository.findByEstado(VENCIDO);
     }
 
     /**
@@ -169,7 +168,7 @@ public class PrestamoService {
      * @return a list of {@link Prestamo} objects with the status "Devuelto".
      */
     private List<Prestamo> getPrestamosDevuelto() {
-        return prestamoRepository.findByEstado("Devuelto");
+        return prestamoRepository.findByEstado(DEVUELTO);
     }
 
 
@@ -180,9 +179,8 @@ public class PrestamoService {
      * @return the prestamo with the given ID
      */
     public Prestamo getPrestamoById(String id) {
-        Prestamo prestamo = prestamoRepository.findById(id).orElseThrow(() ->
+        return prestamoRepository.findById(id).orElseThrow(() ->
                 new PrestamosException.PrestamosExceptionPrestamoIdNotFound("El préstamo con el id " + id + " no existe"));
-        return prestamo;
     }
 
     /**
@@ -224,9 +222,9 @@ public class PrestamoService {
      */
     public Prestamo deletePrestamoById(String id) {
         Prestamo prestamo = getPrestamoById(id);
-        if (prestamo.getEstado().equals("Devuelto")) {
+        if (prestamo.getEstado().equals(DEVUELTO)) {
             throw new PrestamosException.PrestamosExceptionStateError("El préstamo ya ha sido devuelto");
-        } else if (prestamo.getEstado().equals("Vencido")) {
+        } else if (prestamo.getEstado().equals(VENCIDO)) {
             throw new PrestamosException.PrestamosExceptionStateError("El préstamo está vencido");
         } else {
             prestamoRepository.deleteById(prestamo.getId());
@@ -244,10 +242,8 @@ public class PrestamoService {
      */
     public void updatePrestamo(String id, Map<String, Object> updates) {
         Prestamo prestamo = getPrestamoById(id);
-        if ("vencido".equals(prestamo.getEstado()) || "devuelto".equals(prestamo.getEstado())) {
-            if (!updates.containsKey("historial_estado")) {
-                throw new IllegalArgumentException("No se puede actualizar el préstamo en estado vencido o devuelto, excepto el historial del ejemplar");
-            }
+        if ((VENCIDO.equals(prestamo.getEstado()) || DEVUELTO.equals(prestamo.getEstado())) && !updates.containsKey("historial_estado")) {
+            throw new IllegalArgumentException("No se puede actualizar el préstamo en estado vencido o devuelto, excepto el historial del ejemplar");
         }
         updates.forEach((key, value) -> {
             switch (key) {
@@ -280,7 +276,7 @@ public class PrestamoService {
 
     public Prestamo devolverPrestamo(String prestamoId, String estado) {
         Prestamo prestamo = getPrestamoById(prestamoId);
-        prestamo.setEstado("Devuelto");
+        prestamo.setEstado(DEVUELTO);
         prestamo.setHistorialEstado(estado);
         prestamo.setFechaDevolucion(LocalDate.now());
         //TODO: Implementar se implementa la peticion a la api de envio de correos
@@ -301,7 +297,7 @@ public class PrestamoService {
     private boolean getEstadoHistory(String idLibro, String estado) {
         List<Prestamo> prestamos = prestamoRepository.getPrestamosByIdLibro(idLibro);
         Prestamo prestamo;
-        if (prestamos.size() == 0) return false;
+        if (prestamos.isEmpty()) return false;
         prestamo = prestamos.get(0);
         for (int i = 1; i < prestamos.size(); i++) {
             if (prestamos.get(i).getFechaPrestamo().isAfter(prestamo.getFechaPrestamo())) {
