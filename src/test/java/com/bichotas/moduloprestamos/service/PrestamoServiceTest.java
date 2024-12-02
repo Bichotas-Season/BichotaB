@@ -131,7 +131,7 @@ class PrestamoServiceTest {
     @Test
     public void shouldGetPrestamoByIdSuccess() {
         Prestamo prestamo = new Prestamo();
-        prestamo.setId(new org.bson.types.ObjectId());
+        prestamo.setId(String.valueOf(new org.bson.types.ObjectId()));
         prestamo.setIdEstudiante("123");
         prestamo.setIdLibro("456");
         prestamo.setEstado("Prestado");
@@ -226,4 +226,50 @@ class PrestamoServiceTest {
             prestamoService.getPrestamosByIdEstudiante("123");
         });
     }
+
+
+    @Test
+    public void shouldDeletePrestamoWhenNotReturnedOrOverdue() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setIdEstudiante("123");
+        prestamo.setIdLibro("456");
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        Prestamo result = prestamoService.deletePrestamoById("123");
+
+        assertNotNull(result);
+        verify(prestamoRepository, times(1)).deleteById(prestamo.getId());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPrestamoIsReturned() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setIdEstudiante("123");
+        prestamo.setIdLibro("456");
+        prestamo.setEstado("Devuelto");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        assertThrows(PrestamosException.PrestamosExceptionStateError.class, () -> {
+            prestamoService.deletePrestamoById("123");
+        });
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPrestamoIsOverdue() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setIdEstudiante("123");
+        prestamo.setIdLibro("456");
+        prestamo.setEstado("Vencido");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        assertThrows(PrestamosException.PrestamosExceptionStateError.class, () -> {
+            prestamoService.deletePrestamoById("123");
+        });
+    }
+
+
 }
