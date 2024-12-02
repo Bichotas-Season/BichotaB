@@ -138,6 +138,35 @@ class PrestamoControllerTest {
     }
 
 
+
+
+    @Test
+    void shouldReturnEmptyListWhenNoPrestamosForEstudiante() {
+        when(prestamoService.getPrestamosByIdEstudiante("123")).thenReturn(Collections.emptyList());
+
+        ResponseEntity<?> response = prestamoController.getPrestamosByEstudiante("123");
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("prestamos", Collections.emptyList()), response.getBody());
+    }
+
+    @Test
+    void shouldReturnServerErrorWhenExceptionOccurs() {
+        when(prestamoService.getPrestamosByIdEstudiante("123")).thenThrow(new RuntimeException("Unexpected error"));
+
+        ResponseEntity<?> response = prestamoController.getPrestamosByEstudiante("123");
+
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
+    }
+
+
+    @Test
+    void shouldReturnServerErrorWhenUnexpectedExceptionOccurs() {
+        doThrow(new RuntimeException("Unexpected error")).when(prestamoService).deletePrestamoById("1");
+
+        ResponseEntity<?> response = prestamoController.deletePrestamo("1");
+
     @Test
     void shouldUpdatePrestamoSuccessfully() {
         Map<String, Object> updates = Map.of("estado", "Devuelto");
@@ -181,6 +210,7 @@ class PrestamoControllerTest {
         doThrow(new RuntimeException("Unexpected error")).when(prestamoService).updatePrestamo("1", updates);
 
         ResponseEntity<?> response = prestamoController.updatePrestamo("1", updates);
+
 
         assertEquals(500, response.getStatusCodeValue());
         assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
