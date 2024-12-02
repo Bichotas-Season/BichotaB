@@ -136,4 +136,37 @@ class PrestamoControllerTest {
         assertEquals(404, response.getStatusCodeValue());
         assertEquals(Collections.singletonMap("error", "Prestamo not found"), response.getBody());
     }
+
+
+
+    @Test
+    void shouldReturnEmptyListWhenNoPrestamosForEstudiante() {
+        when(prestamoService.getPrestamosByIdEstudiante("123")).thenReturn(Collections.emptyList());
+
+        ResponseEntity<?> response = prestamoController.getPrestamosByEstudiante("123");
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("prestamos", Collections.emptyList()), response.getBody());
+    }
+
+    @Test
+    void shouldReturnServerErrorWhenExceptionOccurs() {
+        when(prestamoService.getPrestamosByIdEstudiante("123")).thenThrow(new RuntimeException("Unexpected error"));
+
+        ResponseEntity<?> response = prestamoController.getPrestamosByEstudiante("123");
+
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
+    }
+
+
+    @Test
+    void shouldReturnServerErrorWhenUnexpectedExceptionOccurs() {
+        doThrow(new RuntimeException("Unexpected error")).when(prestamoService).deletePrestamoById("1");
+
+        ResponseEntity<?> response = prestamoController.deletePrestamo("1");
+
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
+    }
 }
