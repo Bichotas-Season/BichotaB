@@ -25,17 +25,16 @@ public class PrestamoControllerTest {
     private PrestamoController prestamoController;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void shouldReturnAllPrestamos(){
+    public void shouldReturnAllPrestamos() {
         Prestamo prestamo1 = new Prestamo();
         prestamo1.setIdEstudiante("123");
         prestamo1.setIdLibro("456");
         prestamo1.setEstado("Prestado");
-
         Prestamo prestamo2 = new Prestamo();
         prestamo2.setIdEstudiante("789");
         prestamo2.setIdLibro("101");
@@ -45,9 +44,9 @@ public class PrestamoControllerTest {
         prestamos.add(prestamo1);
         prestamos.add(prestamo2);
 
-        when(prestamoService.getPrestamos()).thenReturn(prestamos);
+        when(prestamoService.getPrestamos(null)).thenReturn(prestamos);
 
-        ResponseEntity<?> response = prestamoController.getPrestamos();
+        ResponseEntity<?> response = prestamoController.getPrestamos(null);
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(Collections.singletonMap("prestamos", prestamos), response.getBody());
