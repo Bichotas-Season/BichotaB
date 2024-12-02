@@ -136,4 +136,53 @@ class PrestamoControllerTest {
         assertEquals(404, response.getStatusCodeValue());
         assertEquals(Collections.singletonMap("error", "Prestamo not found"), response.getBody());
     }
+
+
+    @Test
+    void shouldUpdatePrestamoSuccessfully() {
+        Map<String, Object> updates = Map.of("estado", "Devuelto");
+
+        doNothing().when(prestamoService).updatePrestamo("1", updates);
+
+        ResponseEntity<?> response = prestamoController.updatePrestamo("1", updates);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("message", "Prestamo actualizado correctamente"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnBadRequestForInvalidUpdate() {
+        Map<String, Object> updates = Map.of("estado", "Devuelto");
+
+        doThrow(new IllegalArgumentException("Invalid update")).when(prestamoService).updatePrestamo("1", updates);
+
+        ResponseEntity<?> response = prestamoController.updatePrestamo("1", updates);
+
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "Invalid update"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnNotFoundForNonExistentPrestamo() {
+        Map<String, Object> updates = Map.of("estado", "Devuelto");
+
+        doThrow(new NoSuchElementException("Prestamo not found")).when(prestamoService).updatePrestamo("1", updates);
+
+        ResponseEntity<?> response = prestamoController.updatePrestamo("1", updates);
+
+        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "Prestamo not found"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForUnexpectedException() {
+        Map<String, Object> updates = Map.of("estado", "Devuelto");
+
+        doThrow(new RuntimeException("Unexpected error")).when(prestamoService).updatePrestamo("1", updates);
+
+        ResponseEntity<?> response = prestamoController.updatePrestamo("1", updates);
+
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
+    }
 }
