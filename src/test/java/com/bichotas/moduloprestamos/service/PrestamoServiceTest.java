@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -108,7 +109,7 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldGetPrestamos(){
+    public void shouldGetPrestamos() {
         Prestamo prestamo1 = new Prestamo();
         prestamo1.setIdEstudiante("123");
         prestamo1.setIdLibro("456");
@@ -271,5 +272,93 @@ class PrestamoServiceTest {
         });
     }
 
+    @Test
+    public void shouldUpdateObservacionesSuccessfully() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        prestamoService.updatePrestamo("123", Map.of("observaciones", "New observation"));
+
+        assertEquals("New observation", prestamo.getObservaciones());
+        verify(prestamoRepository, times(1)).save(prestamo);
+    }
+
+    @Test
+    public void shouldUpdateEstadoSuccessfully() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        prestamoService.updatePrestamo("123", Map.of("estado", "Devuelto"));
+
+        assertEquals("Devuelto", prestamo.getEstado());
+        verify(prestamoRepository, times(1)).save(prestamo);
+    }
+
+    @Test
+    public void shouldUpdateFechaDevolucionSuccessfullyWithString() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        prestamoService.updatePrestamo("123", Map.of("fecha_devolucion", "2023-10-10T10:10:10"));
+
+        assertEquals(LocalDate.of(2023, 10, 10), prestamo.getFechaDevolucion());
+        verify(prestamoRepository, times(1)).save(prestamo);
+    }
+
+    @Test
+    public void shouldUpdateFechaDevolucionSuccessfullyWithLocalDateTime() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        prestamoService.updatePrestamo("123", Map.of("fecha_devolucion", LocalDateTime.of(2023, 10, 10, 10, 10, 10)));
+
+        assertEquals(LocalDate.of(2023, 10, 10), prestamo.getFechaDevolucion());
+        verify(prestamoRepository, times(1)).save(prestamo);
+    }
+
+    @Test
+    public void shouldThrowExceptionForInvalidFechaDevolucionFormat() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            prestamoService.updatePrestamo("123", Map.of("fecha_devolucion", 12345));
+        });
+    }
+
+    @Test
+    public void shouldUpdateHistorialEstadoSuccessfully() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        prestamoService.updatePrestamo("123", Map.of("historial_estado", "New history"));
+
+        assertEquals("New history", prestamo.getHistorialEstado());
+        verify(prestamoRepository, times(1)).save(prestamo);
+    }
+
+    @Test
+    public void shouldThrowExceptionForInvalidAttribute() {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(any(String.class))).thenReturn(java.util.Optional.of(prestamo));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            prestamoService.updatePrestamo("123", Map.of("invalid_attribute", "value"));
+        });
+    }
 
 }
