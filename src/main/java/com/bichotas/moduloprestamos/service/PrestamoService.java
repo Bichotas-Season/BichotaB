@@ -282,18 +282,19 @@ public class PrestamoService {
         //TODO: Implementar se implementa la peticion a la api de envio de correos
         prestamoRepository.save(prestamo);
 
-        boolean estadoHistory = getEstadoHistory(prestamo.getIdLibro(), estado);
+        //boolean estadoHistory = getEstadoHistory(prestamo.getIdLibro(), estado);
 
         DevolucionDTO devolucionDTO = DevolucionDTO.builder()
                 .userId(prestamo.getIdEstudiante())
                 .emailGuardian("")
                 .bookId(prestamo.getIdLibro())
                 .bookName("")
-                .loanReturn(estadoHistory).build();
+                //.loanReturn(estadoHistory)
+                .build();
 
         return prestamo;
     }
-
+/*
     private boolean getEstadoHistory(String idLibro, String estado) {
         List<Prestamo> prestamos = prestamoRepository.getPrestamosByIdLibro(idLibro);
         Prestamo prestamo;
@@ -309,7 +310,7 @@ public class PrestamoService {
         } else {
             return true;
         }
-    }
+    }*/
 }
 
 

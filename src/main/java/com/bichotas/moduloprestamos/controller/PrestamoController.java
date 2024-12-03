@@ -6,7 +6,6 @@ import com.bichotas.moduloprestamos.service.PrestamoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -234,11 +233,7 @@ public class PrestamoController {
             }
     )
     public ResponseEntity<?> getPrestamos(@RequestParam(value = "estado", required = false) String estado) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamos(estado)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamos(estado)));
     }
 
     /**
@@ -275,11 +270,7 @@ public class PrestamoController {
             }
     )
     public ResponseEntity<?> getPrestamoById(@PathVariable String id) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamo", prestamoService.getPrestamoById(id)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamo", prestamoService.getPrestamoById(id)));
     }
 
     /**
@@ -312,11 +303,7 @@ public class PrestamoController {
             }
     )
     public ResponseEntity<?> getPrestamosByIsbn(@PathVariable String isbn) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamosByIsbn(isbn)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamosByIsbn(isbn)));
     }
 
     /**
@@ -349,11 +336,7 @@ public class PrestamoController {
             }
     )
     public ResponseEntity<?> getPrestamosByEstudiante(@PathVariable String id) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamosByIdEstudiante(id)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamosByIdEstudiante(id)));
     }
 
     /**
@@ -450,7 +433,14 @@ public class PrestamoController {
         }
     }
 
-    public ResponseEntity<?> devolverPrestamo(@PathVariable String prestamoId, @PathVariable String estado){
+    /**
+     * devolver prestamo by id
+     * @param prestamoId
+     * @param estado
+     * @return
+     */
+    @PatchMapping("/{prestamoId}/devolver")
+    public ResponseEntity<?> devolverPrestamo(@PathVariable String prestamoId, @RequestParam(value = "estado", required = false) String estado) {
         try {
             prestamoService.devolverPrestamo(prestamoId, estado);
             return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Prestamo devuelto correctamente"));
