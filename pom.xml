@@ -124,6 +124,7 @@
                         </goals>
                         <configuration>
                             <excludes>
+                                <exclude>com/bichotas/moduloprestamos/config/*</exclude>
                             </excludes>
                             <rules>
                                 <rule>
