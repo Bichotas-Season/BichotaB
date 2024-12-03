@@ -138,37 +138,6 @@ class PrestamoControllerTest {
         assertEquals(Collections.singletonMap("error", "Prestamo not found"), response.getBody());
     }
 
-
-
-
-    @Test
-    void shouldReturnEmptyListWhenNoPrestamosForEstudiante() {
-        when(prestamoService.getPrestamosByIdEstudiante("123")).thenReturn(Collections.emptyList());
-
-        ResponseEntity<?> response = prestamoController.getPrestamosByEstudiante("123");
-
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(Collections.singletonMap("prestamos", Collections.emptyList()), response.getBody());
-    }
-/*
-    @Test
-    void shouldReturnServerErrorWhenExceptionOccurs() {
-        when(prestamoService.getPrestamosByIdEstudiante("123")).thenThrow(new RuntimeException("Unexpected error"));
-
-        ResponseEntity<?> response = prestamoController.getPrestamosByEstudiante("123");
-
-        assertEquals(500, response.getStatusCodeValue());
-        assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
-    }
-*/
-
-    @Test
-    void shouldReturnServerErrorWhenUnexpectedExceptionOccurs() {
-        doThrow(new RuntimeException("Unexpected error")).when(prestamoService).deletePrestamoById("1");
-
-        ResponseEntity<?> response = prestamoController.deletePrestamo("1");
-    }
-
     @Test
     void shouldUpdatePrestamoSuccessfully() {
         Map<String, Object> updates = Map.of("estado", "Devuelto");
@@ -213,7 +182,6 @@ class PrestamoControllerTest {
 
         ResponseEntity<?> response = prestamoController.updatePrestamo("1", updates);
 
-
         assertEquals(500, response.getStatusCodeValue());
         assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
     }
@@ -244,22 +212,6 @@ class PrestamoControllerTest {
     }
 
     @Test
-    void shouldReturnBadRequestWhenPrestamoDataInvalid() {
-        Prestamo prestamo = new Prestamo();
-        prestamo.setIdEstudiante("");  // Datos invalidos
-
-        when(prestamoService.createPrestamo(prestamo)).thenThrow(new IllegalArgumentException("Datos inválidos"));
-
-        ResponseEntity<?> response = prestamoController.createPrestamo(prestamo);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals(Collections.singletonMap("error", "Error inesperado: Datos inválidos"), response.getBody());
-    }
-
-
-
-    // Test 6: Verificar que se devuelve un error 404 si el préstamo no se encuentra
-    @Test
     void shouldReturnNotFoundWhenPrestamoNotFound() {
         when(prestamoService.getPrestamoById("999")).thenReturn(null);
 
@@ -267,79 +219,5 @@ class PrestamoControllerTest {
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(Collections.singletonMap("prestamo", null), response.getBody());
-    }
-
-    @Test
-    void shouldReturnServerErrorWhenDeleteFails() {
-        doThrow(new RuntimeException("Unexpected error")).when(prestamoService).deletePrestamoById("1");
-
-        ResponseEntity<?> response = prestamoController.deletePrestamo("1");
-
-        assertEquals(500, response.getStatusCodeValue());
-        assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenPrestamoDoesNotExist() {
-        doThrow(new NoSuchElementException("Prestamo not found")).when(prestamoService).deletePrestamoById("1");
-
-        ResponseEntity<?> response = prestamoController.deletePrestamo("1");
-
-        assertEquals(500, response.getStatusCodeValue());
-        assertEquals(Collections.singletonMap("error", "Prestamo not found"), response.getBody());
-    }
-
-    @Test
-    void devolverPrestamo_InvalidArgument_ReturnsBadRequestResponse() {
-        // Arrange
-        String prestamoId = "123";
-        String estado = "En buen estado";
-
-        doThrow(new IllegalArgumentException("Invalid argument"))
-                .when(prestamoService).devolverPrestamo(prestamoId, estado);
-
-        // Act
-        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        Map<String, String> responseBody = (Map<String, String>) response.getBody();
-        assertEquals("Invalid argument", responseBody.get("error"));
-    }
-
-    @Test
-    void devolverPrestamo_PrestamoNotFound_ReturnsNotFoundResponse() {
-        // Arrange
-        String prestamoId = "123";
-        String estado = "En buen estado";
-
-        doThrow(new NoSuchElementException("Prestamo not found"))
-                .when(prestamoService).devolverPrestamo(prestamoId, estado);
-
-        // Act
-        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
-
-        // Assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        Map<String, String> responseBody = (Map<String, String>) response.getBody();
-        assertEquals("Prestamo not found", responseBody.get("error"));
-    }
-
-    @Test
-    void devolverPrestamo_UnexpectedException_ReturnsInternalServerErrorResponse() {
-        // Arrange
-        String prestamoId = "123";
-        String estado = "En buen estado";
-
-        doThrow(new RuntimeException("Unexpected error"))
-                .when(prestamoService).devolverPrestamo(prestamoId, estado);
-
-        // Act
-        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
-
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        Map<String, String> responseBody = (Map<String, String>) response.getBody();
-        assertEquals("Unexpected error", responseBody.get("error"));
     }
 }

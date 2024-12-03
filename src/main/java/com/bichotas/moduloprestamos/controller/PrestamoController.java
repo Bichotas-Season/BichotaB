@@ -29,6 +29,7 @@ public class PrestamoController {
 
     /**
      * create a new prestamo with the details provided
+     *
      * @param prestamo
      * @return
      */
@@ -135,13 +136,12 @@ public class PrestamoController {
             return ResponseEntity.status(HttpStatus.CREATED).body(Collections.singletonMap("prestamo", prestamoSaved));
         } catch (PrestamosException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Error inesperado: " + e.getMessage()));
         }
     }
 
     /**
      * get all prestamos in the system
+     *
      * @return
      */
     @GetMapping
@@ -237,7 +237,8 @@ public class PrestamoController {
     }
 
     /**
-     *Get the details of a specific prestamos using its ID
+     * Get the details of a specific prestamos using its ID
+     *
      * @param id
      * @return
      */
@@ -275,6 +276,7 @@ public class PrestamoController {
 
     /**
      * Get all prestamos associated with a specific book using its ISBN
+     *
      * @param isbn
      * @return
      */
@@ -308,6 +310,7 @@ public class PrestamoController {
 
     /**
      * get prestamos by id estudiante
+     *
      * @param id
      * @return
      */
@@ -341,6 +344,7 @@ public class PrestamoController {
 
     /**
      * delete prestamo by id
+     *
      * @param id
      * @return
      */
@@ -384,6 +388,7 @@ public class PrestamoController {
 
     /**
      * update prestamo by id except if the prestamo is vencido or devuelto
+     *
      * @param id
      * @param updates
      * @return
@@ -433,14 +438,9 @@ public class PrestamoController {
         }
     }
 
-    /**
-     * devolver prestamo by id
-     * @param prestamoId
-     * @param estado
-     * @return
-     */
     @PatchMapping("/{prestamoId}/devolver")
     public ResponseEntity<?> devolverPrestamo(@PathVariable String prestamoId, @RequestParam(value = "estado", required = false) String estado) {
+
         try {
             prestamoService.devolverPrestamo(prestamoId, estado);
             return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Prestamo devuelto correctamente"));
