@@ -6,6 +6,7 @@ import com.bichotas.moduloprestamos.service.PrestamoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,21 +18,22 @@ import java.util.NoSuchElementException;
 
 
 @RestController
-@RequestMapping("/prestamos")
+@RequestMapping("/v1.0/prestamos")
 @Tag(
         name = "Prestamos",
         description = "Operaciones relacionadas con los prestamos de libros"
 )
 public class PrestamoController {
 
-
-    private final PrestamoService prestamoService;
-
     @Autowired
-    public PrestamoController(PrestamoService prestamoService) {
-        this.prestamoService = prestamoService;
-    }
+    private PrestamoService prestamoService;
 
+    /**
+     * create a new prestamo with the details provided
+     *
+     * @param prestamo
+     * @return
+     */
     @PostMapping
     @Operation(
             method = "POST",
@@ -135,83 +137,112 @@ public class PrestamoController {
             return ResponseEntity.status(HttpStatus.CREATED).body(Collections.singletonMap("prestamo", prestamoSaved));
         } catch (PrestamosException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Error inesperado: " + e.getMessage()));
         }
     }
 
-
+    /**
+     * get all prestamos in the system
+     *
+     * @return
+     */
     @GetMapping
     @Operation(
-            summary = "Obtener todos los prestamos",
-            description = "Obtiene todos los prestamos registrados en el sistema",
+            method = "GET",
+            summary = "Obtener todos los préstamos",
+            description = "Obtiene todos los préstamos registrados en el sistema o los filtra según el estado proporcionado.",
             tags = {"Prestamos"},
-            responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "Prestamos obtenidos correctamente"
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "500",
-                            description = "Error interno del servidor"
+            parameters = {
+                    @io.swagger.v3.oas.annotations.Parameter(
+                            name = "estado",
+                            description = "Estado de los préstamos a obtener. Puede ser 'Prestado', 'Vencido', o 'Devuelto'.",
+                            required = false,
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = String.class)
                     )
-            }
-    )
-    public ResponseEntity<?> getPrestamos() {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamos()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
-        }
-    }
-
-
-    @GetMapping("/prestamos-prestados")
-    @Operation(
-            summary = "Obtener préstamos en estado prestado",
-            description = "Obtiene todos los préstamos que se encuentran actualmente en estado 'Prestado'",
-            tags = {"Prestamos"},
+            },
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
-                            description = "Lista de préstamos en estado prestado obtenida correctamente",
+                            description = "Préstamos obtenidos correctamente",
                             content = @io.swagger.v3.oas.annotations.media.Content(
                                     mediaType = "application/json",
-                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = Prestamo.class)
+                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = Prestamo.class),
+                                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Lista de préstamos",
+                                            value = """
+                                                    {
+                                                        "prestamos": [
+                                                            {
+                                                                "id": "64759fa2edbdee1a2c7b4e1f",
+                                                                "idEstudiante": "5f5b3b3b1f1b3b5f5b3b3b1f",
+                                                                "idLibro": "5f5b3b3b1f1b3b5f5b3b3b1f",
+                                                                "fechaPrestamo": "2024-11-19",
+                                                                "fechaDevolucion": "2025-09-18",
+                                                                "estado": "Prestado",
+                                                                "observaciones": "El estudiante se compromete a devolver el libro en la fecha acordada",
+                                                                "historialEstado": "Estado de como de presta",
+                                                                "creadoBy": "5f5b3b3b1f1b3b5f5b3b3b1f",
+                                                                "fechaCreacion": "2024-11-19T14:30:00"
+                                                            },
+                                                            {
+                                                                "id": "64759fa2edbdee1a2c7b4e1f",
+                                                                "idEstudiante": "5f5b3b3b1f1b3b5f5b3b3b1f",
+                                                                "idLibro": "5f5b3b3b1f1b3b5f5b3b3b1f",
+                                                                "fechaPrestamo": "2024-11-19",
+                                                                "fechaDevolucion": "2025-09-18",
+                                                                "estado": "Prestado",
+                                                                "observaciones": "El estudiante se compromete a devolver el libro en la fecha acordada",
+                                                                "historialEstado": "Estado de como de presta",
+                                                                "creadoBy": "5f5b3b3b1f1b3b5f5b3b3b1f",
+                                                                "fechaCreacion": "2024-11-19T14:30:00"
+                                                            }
+                                                        ]
+                                                    }
+                                                    """
+                                    )
+                            )
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "400",
+                            description = "Estado no válido proporcionado",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "application/json",
+                                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Error de validación",
+                                            value = """
+                                                    {
+                                                        "error": "El estado proporcionado no es válido. Debe ser 'Prestado', 'Vencido', o 'Devuelto'"
+                                                    }
+                                                    """
+                                    )
                             )
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "500",
-                            description = "Error interno del servidor"
+                            description = "Error interno del servidor",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "application/json",
+                                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "Error del servidor",
+                                            value = """
+                                                    {
+                                                        "error": "Error inesperado: NullPointerException"
+                                                    }
+                                                    """
+                                    )
+                            )
                     )
             }
     )
-    public ResponseEntity<?> getPrestamosWithStatusIsPrestado() {
-        //TODO: Implementar
-        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("Prestamos", prestamoService.getPrestamosWithStatusIsPrestado()));
+    public ResponseEntity<?> getPrestamos(@RequestParam(value = "estado", required = false) String estado) {
+        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamos(estado)));
     }
 
-    @GetMapping("/libros-disponibles")
-    @Operation(
-            summary = "Obtener libros disponibles",
-            description = "Obtiene la lista de libros que están disponibles para préstamo",
-            tags = {"Prestamos"},
-            responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "Lista de libros disponibles obtenida correctamente"
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "500",
-                            description = "Error interno del servidor"
-                    )
-            }
-    )
-    public ResponseEntity<?> getLibrosDisponibles() {
-        //TODO: Implementar
-        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("libros", "libros disponibles"));
-    }
-
+    /**
+     * Get the details of a specific prestamos using its ID
+     *
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
     @Operation(
             summary = "Obtener préstamo por ID",
@@ -248,7 +279,13 @@ public class PrestamoController {
         }
     }
 
-    @GetMapping("/libro/{isbn}")
+    /**
+     * Get all prestamos associated with a specific book using its ISBN
+     *
+     * @param isbn
+     * @return
+     */
+    @GetMapping("/por-libro/{isbn}")
     @Operation(
             summary = "Obtener préstamos por ISBN del libro",
             description = "Obtiene todos los préstamos asociados a un libro específico usando su ISBN",
@@ -280,7 +317,13 @@ public class PrestamoController {
         }
     }
 
-    @GetMapping("/estudiante/{id}")
+    /**
+     * get prestamos by id estudiante
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/por-estudiante/{id}")
     @Operation(
             summary = "Obtener préstamos por ID de estudiante",
             description = "Obtiene todos los préstamos asociados a un estudiante específico",
@@ -312,7 +355,13 @@ public class PrestamoController {
         }
     }
 
-    @DeleteMapping("/delete-{id}")
+    /**
+     * delete prestamo by id
+     *
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/{id}/delete")
     @Operation(
             summary = "Eliminar préstamo",
             description = "Elimina un préstamo específico usando su ID",
@@ -350,7 +399,14 @@ public class PrestamoController {
     }
 
 
-    @PutMapping("/update-{id}")
+    /**
+     * update prestamo by id except if the prestamo is vencido or devuelto
+     *
+     * @param id
+     * @param updates
+     * @return
+     */
+    @PatchMapping("/{id}/update")
     @Operation(
             summary = "Actualizar un atributo del préstamo",
             description = "Actualiza un atributo específico del préstamo, excepto si el préstamo está en estado de vencido o devuelto",
@@ -386,6 +442,19 @@ public class PrestamoController {
         try {
             prestamoService.updatePrestamo(id, updates);
             return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Prestamo actualizado correctamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    public ResponseEntity<?> devolverPrestamo(@PathVariable String prestamoId, @PathVariable String estado) {
+        try {
+            prestamoService.devolverPrestamo(prestamoId, estado);
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Prestamo devuelto correctamente"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
         } catch (NoSuchElementException e) {

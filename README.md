@@ -38,6 +38,8 @@ The **Module Loans** API manages the loan and return process for books in a libr
 - **API Documentation**: Fully documented endpoints using Swagger/OpenAPI.
 
 ---
+## Component Architecture 
+![Arquitectura.jpg](img%2FArquitectura.jpg)
 
 ## Technologies
 - **Java 21**
@@ -51,7 +53,7 @@ The **Module Loans** API manages the loan and return process for books in a libr
 ## Getting Started
 
 ### Prerequisites
-1. Java 21 or higher
+1. Java 21
 2. MongoDB instance running locally or remotely
 3. Maven 3.x for dependency management
 
@@ -80,15 +82,15 @@ The **Module Loans** API manages the loan and return process for books in a libr
 
 #### Loan Operations
 
-| Method | Endpoint                   | Description                                         |
-|--------|----------------------------|-----------------------------------------------------|
-| POST   | `/prestamos`               | Create a new loan                                   |
-| GET    | `/prestamos`               | Retrieve all loans                                  |
-| GET    | `/prestamos-prestados`     | Retrieve loans with status `Prestado`              |
-| GET    | `/prestamos/{id}`          | Retrieve loan details by ID                        |
-| GET    | `/prestamos/libro/{isbn}`  | Retrieve loans by book ISBN                        |
+| Method | Endpoint                     | Description                                         |
+|--------|------------------------------|-----------------------------------------------------|
+| POST   | `/prestamos`                 | Create a new loan                                   |
+| GET    | `/prestamos`                 | Retrieve all loans                                  |
+| GET    | `/prestamos-prestados`       | Retrieve loans with status `Prestado`              |
+| GET    | `/prestamos/{id}`            | Retrieve loan details by ID                        |
+| GET    | `/prestamos/libro/{isbn}`    | Retrieve loans by book ISBN                        |
 | GET    | `/prestamos/estudiante/{id}` | Retrieve loans by student ID                      |
-| DELETE | `/prestamos/delete-{id}`   | Delete a loan (if conditions are met)              |
+| DELETE | `/prestamos/{id}/delete`         | Delete a loan (if conditions are met)              |
 
 ### Aditional Configurations
 1. **CORS:** Configured to allow only frontend requests from the defined FRONTEND_URL.

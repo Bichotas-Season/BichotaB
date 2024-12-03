@@ -2,7 +2,6 @@ package com.bichotas.moduloprestamos.entity;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -22,7 +21,7 @@ import java.time.LocalDateTime;
 @Document(collection = "prestamo")
 public class Prestamo {
     @Id
-    private ObjectId id;
+    private String id;
 
     @NotBlank(message = "El id del estudiante no puede estar vacío")
     private String idEstudiante;
@@ -50,3 +49,4 @@ public class Prestamo {
     @NotNull(message = "El usuario que creó el préstamo no puede ser nulo")
     private String creadoBy;
 }
+

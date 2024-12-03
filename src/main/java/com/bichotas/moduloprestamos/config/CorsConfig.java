@@ -9,7 +9,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-
+/**
+ * This class is in charge of configuring the CORS policy for the application.
+ */
 @Configuration
 public class CorsConfig {
     

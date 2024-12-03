@@ -3,19 +3,15 @@ package com.bichotas.moduloprestamos.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bichotas.moduloprestamos.entity.Prestamo;
+import com.bichotas.moduloprestamos.entity.dto.DevolucionDTO;
 import com.bichotas.moduloprestamos.exception.PrestamosException;
 import com.bichotas.moduloprestamos.repository.PrestamoRepository;
-
-import lombok.AllArgsConstructor;
 
 /**
  * Service class for managing Prestamo (loan) operations.
@@ -32,13 +28,13 @@ import lombok.AllArgsConstructor;
 @Service
 public class PrestamoService {
 
+    private static final String VENCIDO = "Vencido";
+    private static final String DEVUELTO = "Devuelto";
     private final PrestamoRepository prestamoRepository;
-    private List<Prestamo> prestamos;
 
     @Autowired
     public PrestamoService(PrestamoRepository prestamoRepository) {
         this.prestamoRepository = prestamoRepository;
-        this.prestamos = prestamoRepository.findAll();
     }
 
     /**
@@ -109,28 +105,72 @@ public class PrestamoService {
     private boolean verifyIfBookIsAvailable(String id_libro) {
         //TODO: Implementar
         return true;
-
     }
 
     /**
-     * Retrieves all Prestamos.
+     * Retrieves a list of Prestamo objects based on the provided estado.
+     * If the estado is null, it retrieves all Prestamo objects.
+     * If the estado is "Prestado", it retrieves all Prestamo objects that are currently lent out.
+     * If the estado is "Vencido", it retrieves all Prestamo objects that are overdue.
+     * If the estado is "Devuelto", it retrieves all Prestamo objects that have been returned.
      *
-     * @return a list of all Prestamos
+     * @param estado the state of the Prestamo objects to retrieve. It can be "Prestado", "Vencido", or "Devuelto".
+     * @return a list of Prestamo objects matching the specified estado.
+     * @throws PrestamosException.PrestamosExceptionStateError if the estado is not one of "Prestado", "Vencido", or "Devuelto".
      */
-    public List<Prestamo> getPrestamos() {
-        return prestamos;
+    public List<Prestamo> getPrestamos(String estado) {
+        if (estado == null) {
+            return getPrestamos();
+        } else {
+            switch (estado) {
+                case "Prestado":
+                    return getPrestamosPrestado();
+                case VENCIDO:
+                    return getPrestamosVencido();
+                case DEVUELTO:
+                    return getPrestamosDevuelto();
+                default:
+                    throw new PrestamosException.PrestamosExceptionStateError("El estado solo puede ser Prestado, Vencido o Devuelto");
+            }
+        }
     }
 
     /**
-     * Retrieves all Prestamos with status "Prestado".
+     * Retrieves a list of all Prestamo entities from the repository.
      *
-     * @return a list of Prestamos with status "Prestado"
+     * @return a List of Prestamo objects.
      */
-    public List<Prestamo> getPrestamosWithStatusIsPrestado() {
-        return prestamos.stream()
-                .filter(prestamo -> prestamo.getEstado().equals("Prestado"))
-                .toList();
+    private List<Prestamo> getPrestamos() {
+        return prestamoRepository.findAll();
     }
+
+    /**
+     * Retrieves a list of loans that are currently in the "Prestado" (loaned) state.
+     *
+     * @return a list of {@link Prestamo} objects that have the status "Prestado".
+     */
+    private List<Prestamo> getPrestamosPrestado() {
+        return prestamoRepository.findByEstado("Prestado");
+    }
+
+    /**
+     * Retrieves a list of loans that are overdue.
+     *
+     * @return a list of {@link Prestamo} objects with the status "Vencido".
+     */
+    private List<Prestamo> getPrestamosVencido() {
+        return prestamoRepository.findByEstado(VENCIDO);
+    }
+
+    /**
+     * Retrieves a list of loans that have been returned.
+     *
+     * @return a list of {@link Prestamo} objects with the status "Devuelto".
+     */
+    private List<Prestamo> getPrestamosDevuelto() {
+        return prestamoRepository.findByEstado(DEVUELTO);
+    }
+
 
     /**
      * Retrieves a prestamo by its ID.
@@ -139,10 +179,8 @@ public class PrestamoService {
      * @return the prestamo with the given ID
      */
     public Prestamo getPrestamoById(String id) {
-        return prestamos.stream()
-                .filter(p -> p.getId().toString().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new PrestamosException.PrestamosExceptionPrestamoIdNotFound("El préstamo con el id " + id + " no existe"));
+        return prestamoRepository.findById(id).orElseThrow(() ->
+                new PrestamosException.PrestamosExceptionPrestamoIdNotFound("El préstamo con el id " + id + " no existe"));
     }
 
     /**
@@ -152,14 +190,13 @@ public class PrestamoService {
      * @return the prestamos with the given isbn or throws an exception if the book does not exist
      */
     public List<Prestamo> getPrestamosByIsbn(String isbn) {
-        List<Prestamo> prestamosFiltrados = prestamos.stream()
-                .filter(p -> p.getIdLibro().equals(isbn))
-                .toList();
-
+        List<Prestamo> prestamosFiltrados =
+                getPrestamos().stream()
+                        .filter(p -> p.getIdLibro().equals(isbn))
+                        .toList();
         if (prestamosFiltrados.isEmpty()) {
             throw new PrestamosException.PrestamosExceptionBookIsAvailable("El libro con el ISBN " + isbn + " no ha sido prestado o no existe");
         }
-
         return prestamosFiltrados;
     }
 
@@ -170,15 +207,11 @@ public class PrestamoService {
      * @return the prestamos with the given id or throws an exception if the student does not exist
      */
     public List<Prestamo> getPrestamosByIdEstudiante(String id) {
-        List<Prestamo> prestamosFiltrados = prestamos.stream()
-                .filter(p -> p.getIdEstudiante().equals(id))
-                .toList();
-
-        if (prestamosFiltrados.isEmpty()) {
+        List<Prestamo> prestamos =  prestamoRepository.findByIdEstudiante(id);
+        if (prestamos.isEmpty()) {
             throw new PrestamosException.PrestamosExceptionEstudianteHasNotPrestamo("El estudiante con el id " + id + " no tiene préstamos o no existe.");
         }
-
-        return prestamosFiltrados;
+        return prestamos;
     }
 
     /**
@@ -189,15 +222,14 @@ public class PrestamoService {
      */
     public Prestamo deletePrestamoById(String id) {
         Prestamo prestamo = getPrestamoById(id);
-        if (prestamo.getEstado().equals("Devuelto")) {
+        if (prestamo.getEstado().equals(DEVUELTO)) {
             throw new PrestamosException.PrestamosExceptionStateError("El préstamo ya ha sido devuelto");
-        } else if (prestamo.getEstado().equals("Vencido")) {
+        } else if (prestamo.getEstado().equals(VENCIDO)) {
             throw new PrestamosException.PrestamosExceptionStateError("El préstamo está vencido");
         } else {
             prestamoRepository.deleteById(prestamo.getId());
             return prestamo;
         }
-
     }
 
     /**
@@ -210,13 +242,9 @@ public class PrestamoService {
      */
     public void updatePrestamo(String id, Map<String, Object> updates) {
         Prestamo prestamo = getPrestamoById(id);
-
-        if ("vencido".equals(prestamo.getEstado()) || "devuelto".equals(prestamo.getEstado())) {
-            if (!updates.containsKey("historial_estado")) {
-                throw new IllegalArgumentException("No se puede actualizar el préstamo en estado vencido o devuelto, excepto el historial del ejemplar");
-            }
+        if ((VENCIDO.equals(prestamo.getEstado()) || DEVUELTO.equals(prestamo.getEstado())) && !updates.containsKey("historial_estado")) {
+            throw new IllegalArgumentException("No se puede actualizar el préstamo en estado vencido o devuelto, excepto el historial del ejemplar");
         }
-
         updates.forEach((key, value) -> {
             switch (key) {
                 case "observaciones":
@@ -243,8 +271,44 @@ public class PrestamoService {
                     throw new IllegalArgumentException("Atributo no válido: " + key);
             }
         });
-
         prestamoRepository.save(prestamo);
+    }
+
+    public Prestamo devolverPrestamo(String prestamoId, String estado) {
+        Prestamo prestamo = getPrestamoById(prestamoId);
+        prestamo.setEstado(DEVUELTO);
+        prestamo.setHistorialEstado(estado);
+        prestamo.setFechaDevolucion(LocalDate.now());
+        //TODO: Implementar se implementa la peticion a la api de envio de correos
+        prestamoRepository.save(prestamo);
+
+        boolean estadoHistory = getEstadoHistory(prestamo.getIdLibro(), estado);
+
+        DevolucionDTO devolucionDTO = DevolucionDTO.builder()
+                .userId(prestamo.getIdEstudiante())
+                .emailGuardian("")
+                .bookId(prestamo.getIdLibro())
+                .bookName("")
+                .loanReturn(estadoHistory).build();
+
+        return prestamo;
+    }
+
+    private boolean getEstadoHistory(String idLibro, String estado) {
+        List<Prestamo> prestamos = prestamoRepository.getPrestamosByIdLibro(idLibro);
+        Prestamo prestamo;
+        if (prestamos.isEmpty()) return false;
+        prestamo = prestamos.get(0);
+        for (int i = 1; i < prestamos.size(); i++) {
+            if (prestamos.get(i).getFechaPrestamo().isAfter(prestamo.getFechaPrestamo())) {
+                prestamo = prestamos.get(i);
+            }
+        }
+        if (prestamo.getHistorialEstado().equals(estado)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
 
