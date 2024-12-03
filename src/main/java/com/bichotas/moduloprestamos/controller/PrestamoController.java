@@ -233,7 +233,11 @@ public class PrestamoController {
             }
     )
     public ResponseEntity<?> getPrestamos(@RequestParam(value = "estado", required = false) String estado) {
-        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamos(estado)));
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("prestamos", prestamoService.getPrestamos(estado)));
+        } catch (PrestamosException.PrestamosExceptionStateError e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
+        }
     }
 
     /**
