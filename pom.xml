@@ -50,6 +50,7 @@
         <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.login>admin</sonar.login>
         <sonar.password>cvds2024</sonar.password>
+
     </properties>
     <dependencies>
         <dependency>

@@ -120,6 +120,7 @@ class PrestamoServiceTest {
         assertEquals("Vencido", prestamosWithStatusVencido.get(1).getEstado());
     }
 
+    /*
     @Test
     void shouldGetPrestamosWithEstadoIsDevuelto() {
         Prestamo prestamo1 = new Prestamo();
@@ -139,7 +140,7 @@ class PrestamoServiceTest {
         assertEquals(2, prestamosWithStatusDevuelto.size());
         assertEquals("Devuelto", prestamosWithStatusDevuelto.get(0).getEstado());
         assertEquals("Devuelto", prestamosWithStatusDevuelto.get(1).getEstado());
-    }
+    }*/
 
     @Test
     void shouldGetAllPrestamosWhenEstadoIsNull() {

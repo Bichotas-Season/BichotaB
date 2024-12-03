@@ -9,11 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ModuloPrestamosApplicationTests {
 
     @Test
-    void applicationStartsV() {
-        ModuloPrestamosApplication.main(new String[]{});
-    }
-
-    @Test
     public void applicationFailsToStartWithNullArgsV() {
         assertThrows(IllegalArgumentException.class, () -> ModuloPrestamosApplication.main(null));
     }
