@@ -71,12 +71,9 @@ public class PrestamoService {
      * @throws PrestamosException.PrestamosExceptionStateError            if the state is not one of "Prestado", "Vencido", or "Devuelto"
      */
     private void createPrestamoValidations(Prestamo prestamo) {
-/*        if (verifyIfEstudianteHasPrestamo(prestamo.getIdEstudiante())) {
+        if (verifyIfEstudianteHasPrestamo(prestamo.getIdEstudiante())) {
             throw new PrestamosException.PrestamosExceptionEstudianteHasPrestamo("El estudiante ya tiene un préstamo activo");
         }
-        if (!verifyIfBookIsAvailable(prestamo.getIdLibro())) {
-            throw new PrestamosException.PrestamosExceptionBookIsAvailable("El libro no está disponible");
-        }*/
         if (prestamo.getFechaDevolucion() != null && prestamo.getFechaPrestamo().isAfter(prestamo.getFechaDevolucion())) {
             throw new PrestamosException.PrestamosExceptionTimeError("La fecha de préstamo no puede ser después de la fecha de devolución");
         }
@@ -88,23 +85,17 @@ public class PrestamoService {
     /**
      * Verifies if a student has an active Prestamo.
      *
-     * @param id_estudiante the ID of the student
+     * @param idEstudiante the ID of the student
      * @return true if the student has an active Prestamo, false otherwise
      */
-    private boolean verifyIfEstudianteHasPrestamo(String id_estudiante) {
-        //TODO: Implementar
+    private boolean verifyIfEstudianteHasPrestamo(String idEstudiante) {
+        /*List<Prestamo> prestamos = prestamoRepository.findByIdEstudiante(idEstudiante);
+        for (Prestamo prestamo : prestamos) {
+            if (prestamo.getEstado().equals("Prestado")) {
+                return true;
+            }
+        }*/
         return false;
-    }
-
-    /**
-     * Verifies if a book is available for Prestamo.
-     *
-     * @param id_libro the ID of the book
-     * @return true if the book is available, false otherwise
-     */
-    private boolean verifyIfBookIsAvailable(String id_libro) {
-        //TODO: Implementar
-        return true;
     }
 
     /**
@@ -127,7 +118,7 @@ public class PrestamoService {
                     return getPrestamosPrestado();
                 case "Vencido":
                     return getPrestamosVencido();
-                case "devuelto":
+                case "Devuelto":
                     return getPrestamosDevuelto();
                 default:
                     throw new PrestamosException.PrestamosExceptionStateError("El estado solo puede ser Prestado, Vencido o Devuelto");
@@ -242,9 +233,9 @@ public class PrestamoService {
      */
     public void updatePrestamo(String id, Map<String, Object> updates) {
         Prestamo prestamo = getPrestamoById(id);
-        if ((VENCIDO.equals(prestamo.getEstado()) || DEVUELTO.equals(prestamo.getEstado())) && !updates.containsKey("historial_estado")) {
+        /*if ((VENCIDO.equals(prestamo.getEstado()) || DEVUELTO.equals(prestamo.getEstado())) && !updates.containsKey("historial_estado")) {
             throw new IllegalArgumentException("No se puede actualizar el préstamo en estado vencido o devuelto, excepto el historial del ejemplar");
-        }
+        }*/
         updates.forEach((key, value) -> {
             switch (key) {
                 case "observaciones":
@@ -276,9 +267,10 @@ public class PrestamoService {
 
     public Prestamo devolverPrestamo(String prestamoId, String estado) {
         Prestamo prestamo = getPrestamoById(prestamoId);
-        prestamo.setEstado(DEVUELTO);
+        prestamo.setEstado("Devuelto");
         prestamo.setHistorialEstado(estado);
         prestamo.setFechaDevolucion(LocalDate.now());
+        /*
         //TODO: Implementar se implementa la peticion a la api de envio de correos
         prestamoRepository.save(prestamo);
 
@@ -291,10 +283,11 @@ public class PrestamoService {
                 .bookName("")
                 //.loanReturn(estadoHistory)
                 .build();
-
+        */
         return prestamo;
     }
-/*
+
+    /*
     private boolean getEstadoHistory(String idLibro, String estado) {
         List<Prestamo> prestamos = prestamoRepository.getPrestamosByIdLibro(idLibro);
         Prestamo prestamo;
