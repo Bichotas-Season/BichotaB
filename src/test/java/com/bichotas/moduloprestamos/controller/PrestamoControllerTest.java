@@ -1,6 +1,7 @@
 package com.bichotas.moduloprestamos.controller;
 
 import com.bichotas.moduloprestamos.entity.Prestamo;
+import com.bichotas.moduloprestamos.exception.PrestamosException;
 import com.bichotas.moduloprestamos.service.PrestamoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -220,4 +221,121 @@ class PrestamoControllerTest {
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(Collections.singletonMap("prestamo", null), response.getBody());
     }
+
+    @Test
+    void shouldReturnErrorWhenGetAllPrestamos() {
+        when(prestamoService.getPrestamos("das"))
+                .thenThrow(new PrestamosException.PrestamosExceptionStateError("El estado solo puede ser Prestado, Vencido o Devuelto"));
+        ResponseEntity<?> response = prestamoController.getPrestamos("das");
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "El estado solo puede ser Prestado, Vencido o Devuelto"), response.getBody());
+    }
+
+    @Test
+    void shouldDeletePrestamoSuccessfully() {
+        String prestamoId = "123";
+        Prestamo prestamo = new Prestamo();
+        prestamo.setId(prestamoId);
+        prestamo.setEstado("Prestado");
+
+        when(prestamoService.getPrestamoById(prestamoId)).thenReturn(prestamo);
+
+        ResponseEntity<?> response = prestamoController.deletePrestamo(prestamoId);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("message", "Prestamo eliminado correctamente"), response.getBody());
+        verify(prestamoService).deletePrestamoById(prestamoId);
+    }
+
+    @Test
+    void shouldReturnErrorWhenPrestamoIsReturned() {
+        String prestamoId = "123";
+        Prestamo prestamo = new Prestamo();
+        prestamo.setId(prestamoId);
+        prestamo.setEstado("Devuelto");
+
+        when(prestamoService.getPrestamoById(prestamoId)).thenReturn(prestamo);
+        doThrow(new PrestamosException.PrestamosExceptionStateError("El préstamo ya ha sido devuelto"))
+                .when(prestamoService).deletePrestamoById(prestamoId);
+
+        ResponseEntity<?> response = prestamoController.deletePrestamo(prestamoId);
+
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "El préstamo ya ha sido devuelto"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnErrorWhenPrestamoIsOverdue() {
+        String prestamoId = "123";
+        Prestamo prestamo = new Prestamo();
+        prestamo.setId(prestamoId);
+        prestamo.setEstado("Vencido");
+
+        when(prestamoService.getPrestamoById(prestamoId)).thenReturn(prestamo);
+        doThrow(new PrestamosException.PrestamosExceptionStateError("El préstamo está vencido"))
+                .when(prestamoService).deletePrestamoById(prestamoId);
+
+        ResponseEntity<?> response = prestamoController.deletePrestamo(prestamoId);
+
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(Collections.singletonMap("error", "El préstamo está vencido"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnBadRequestForInvalidArguments() {
+        // Datos de prueba
+        String prestamoId = "123";
+        String estado = "InvalidEstado";
+
+        // Simula una excepción IllegalArgumentException
+        doThrow(new IllegalArgumentException("Estado inválido"))
+                .when(prestamoService).devolverPrestamo(prestamoId, estado);
+
+        // Llama al controlador
+        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
+
+        // Verifica que el código de estado sea 400
+        assertEquals(400, response.getStatusCodeValue());
+        // Verifica el mensaje de error
+        assertEquals(Collections.singletonMap("error", "Estado inválido"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenPrestamoDoesNotExist() {
+        // Datos de prueba
+        String prestamoId = "999";
+        String estado = "Entregado";
+
+        // Simula una excepción NoSuchElementException
+        doThrow(new NoSuchElementException("Prestamo no encontrado"))
+                .when(prestamoService).devolverPrestamo(prestamoId, estado);
+
+        // Llama al controlador
+        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
+
+        // Verifica que el código de estado sea 404
+        assertEquals(404, response.getStatusCodeValue());
+        // Verifica el mensaje de error
+        assertEquals(Collections.singletonMap("error", "Prestamo no encontrado"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForUnexpectedExceptions() {
+        // Datos de prueba
+        String prestamoId = "123";
+        String estado = "Entregado";
+
+        // Simula una excepción genérica
+        doThrow(new RuntimeException("Error inesperado"))
+                .when(prestamoService).devolverPrestamo(prestamoId, estado);
+
+        // Llama al controlador
+        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
+
+        // Verifica que el código de estado sea 500
+        assertEquals(500, response.getStatusCodeValue());
+        // Verifica el mensaje de error
+        assertEquals(Collections.singletonMap("error", "Error inesperado"), response.getBody());
+    }
+
 }
