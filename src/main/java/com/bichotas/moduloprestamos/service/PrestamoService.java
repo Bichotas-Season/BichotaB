@@ -71,12 +71,12 @@ public class PrestamoService {
      * @throws PrestamosException.PrestamosExceptionStateError            if the state is not one of "Prestado", "Vencido", or "Devuelto"
      */
     private void createPrestamoValidations(Prestamo prestamo) {
-        if (verifyIfEstudianteHasPrestamo(prestamo.getIdEstudiante())) {
+/*        if (verifyIfEstudianteHasPrestamo(prestamo.getIdEstudiante())) {
             throw new PrestamosException.PrestamosExceptionEstudianteHasPrestamo("El estudiante ya tiene un préstamo activo");
         }
         if (!verifyIfBookIsAvailable(prestamo.getIdLibro())) {
             throw new PrestamosException.PrestamosExceptionBookIsAvailable("El libro no está disponible");
-        }
+        }*/
         if (prestamo.getFechaDevolucion() != null && prestamo.getFechaPrestamo().isAfter(prestamo.getFechaDevolucion())) {
             throw new PrestamosException.PrestamosExceptionTimeError("La fecha de préstamo no puede ser después de la fecha de devolución");
         }
@@ -125,9 +125,9 @@ public class PrestamoService {
             switch (estado) {
                 case "Prestado":
                     return getPrestamosPrestado();
-                case VENCIDO:
+                case "Vencido":
                     return getPrestamosVencido();
-                case DEVUELTO:
+                case "devuelto":
                     return getPrestamosDevuelto();
                 default:
                     throw new PrestamosException.PrestamosExceptionStateError("El estado solo puede ser Prestado, Vencido o Devuelto");
