@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -181,7 +182,7 @@ class PrestamoServiceTest {
 
     @Test
     public void shouldGetPrestamos() {
-    Prestamo prestamo1 = new Prestamo();
+        Prestamo prestamo1 = new Prestamo();
         prestamo1.setIdEstudiante("123");
         prestamo1.setIdLibro("456");
         prestamo1.setEstado("Prestado");
@@ -356,7 +357,7 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldUpdateObservacionesSuccessfully() {
+    void shouldUpdateObservacionesSuccessfully() {
         Prestamo prestamo = new Prestamo();
         prestamo.setEstado("Prestado");
 
@@ -369,7 +370,7 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldUpdateEstadoSuccessfully() {
+    void shouldUpdateEstadoSuccessfully() {
         Prestamo prestamo = new Prestamo();
         prestamo.setEstado("Prestado");
 
@@ -382,7 +383,7 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldUpdateFechaDevolucionSuccessfullyWithString() {
+    void shouldUpdateFechaDevolucionSuccessfullyWithString() {
         Prestamo prestamo = new Prestamo();
         prestamo.setEstado("Prestado");
 
@@ -395,7 +396,7 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldUpdateFechaDevolucionSuccessfullyWithLocalDateTime() {
+    void shouldUpdateFechaDevolucionSuccessfullyWithLocalDateTime() {
         Prestamo prestamo = new Prestamo();
         prestamo.setEstado("Prestado");
 
@@ -408,7 +409,7 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionForInvalidFechaDevolucionFormat() {
+    void shouldThrowExceptionForInvalidFechaDevolucionFormat() {
         Prestamo prestamo = new Prestamo();
         prestamo.setEstado("Prestado");
 
@@ -420,7 +421,7 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldUpdateHistorialEstadoSuccessfully() {
+    void shouldUpdateHistorialEstadoSuccessfully() {
         Prestamo prestamo = new Prestamo();
         prestamo.setEstado("Prestado");
 
@@ -433,7 +434,7 @@ class PrestamoServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionForInvalidAttribute() {
+    void shouldThrowExceptionForInvalidAttribute() {
         Prestamo prestamo = new Prestamo();
         prestamo.setEstado("Prestado");
 
@@ -444,4 +445,96 @@ class PrestamoServiceTest {
         });
     }
 
+    @Test
+    void shouldGellAllPrestamosWithEstadoIsDevuelto(){
+        Prestamo prestamo1 = new Prestamo();
+        prestamo1.setIdEstudiante("123");
+        prestamo1.setIdLibro("456");
+        prestamo1.setEstado("Devuelto");
+
+        Prestamo prestamo2 = new Prestamo();
+        prestamo2.setIdEstudiante("1233");
+        prestamo2.setIdLibro("4564");
+        prestamo2.setEstado("Devuelto");
+
+        when(prestamoRepository.findByEstado("Devuelto")).thenReturn(List.of(prestamo1, prestamo2));
+
+        List<Prestamo> prestamosWithStatusDevuelto = prestamoService.getPrestamos("Devuelto");
+
+        assertEquals(2, prestamosWithStatusDevuelto.size());
+        assertEquals("Devuelto", prestamosWithStatusDevuelto.get(0).getEstado());
+        assertEquals("Devuelto", prestamosWithStatusDevuelto.get(1).getEstado());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenPrestamoNotFound2() {
+        when(prestamoRepository.findById("1")).thenReturn(Optional.empty());
+
+        assertThrows(PrestamosException.PrestamosExceptionPrestamoIdNotFound.class, () -> {
+            prestamoService.devolverPrestamo("1", "Entregado");
+        });
+    }
+
+    @Test
+    void testDevolverPrestamo_Success() {
+        String prestamoId = "123";
+        String estado = "En buen estado";
+
+        Prestamo prestamo = new Prestamo();
+        prestamo.setId(prestamoId);
+        prestamo.setEstado("Prestado");
+
+        when(prestamoRepository.findById(prestamoId)).thenReturn(Optional.of(prestamo));
+
+        Prestamo returnedPrestamo = prestamoService.devolverPrestamo(prestamoId, estado);
+
+        assertNotNull(returnedPrestamo);
+        assertEquals("Devuelto", returnedPrestamo.getEstado());
+        assertEquals(estado, returnedPrestamo.getHistorialEstado());
+        assertEquals(LocalDate.now(), returnedPrestamo.getFechaDevolucion());
+
+        verify(prestamoRepository).findById(prestamoId);
+    }
+
+    @Test
+    void testDevolverPrestamo_PrestamoNotFound() {
+        String prestamoId = "999";
+        String estado = "En buen estado";
+
+        when(prestamoRepository.findById(prestamoId)).thenReturn(Optional.empty());
+
+        assertThrows(PrestamosException.class, () -> {
+            prestamoService.devolverPrestamo(prestamoId, estado);
+        });
+
+        verify(prestamoRepository).findById(prestamoId);
+    }
+
+    @Test
+    void testDevolverPrestamo_DifferentEstadoValues() {
+        String prestamoId = "456";
+        String[] estadoVariants = {
+                "Ligeramente deteriorado",
+                "Muy deteriorado",
+                "Perfecto estado"
+        };
+
+        for (String estado : estadoVariants) {
+            Prestamo prestamo = new Prestamo();
+            prestamo.setId(prestamoId);
+            prestamo.setEstado("Prestado");
+
+            when(prestamoRepository.findById(prestamoId)).thenReturn(Optional.of(prestamo));
+
+            Prestamo returnedPrestamo = prestamoService.devolverPrestamo(prestamoId, estado);
+
+            assertEquals("Devuelto", returnedPrestamo.getEstado());
+            assertEquals(estado, returnedPrestamo.getHistorialEstado());
+            assertEquals(LocalDate.now(), returnedPrestamo.getFechaDevolucion());
+
+            reset(prestamoRepository);
+        }
+    }
+
 }
+

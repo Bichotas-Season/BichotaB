@@ -11,9 +11,11 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 class PrestamoControllerTest {
@@ -209,7 +211,7 @@ class PrestamoControllerTest {
         ResponseEntity<?> response = prestamoController.createPrestamo(prestamo);
 
         assertEquals(201, response.getStatusCodeValue());
-        assertEquals(Collections.singletonMap("prestamo",prestamo), response.getBody());
+        assertEquals(Collections.singletonMap("prestamo", prestamo), response.getBody());
     }
 
     @Test
@@ -283,59 +285,125 @@ class PrestamoControllerTest {
 
     @Test
     void shouldReturnBadRequestForInvalidArguments() {
-        // Datos de prueba
         String prestamoId = "123";
         String estado = "InvalidEstado";
 
-        // Simula una excepción IllegalArgumentException
         doThrow(new IllegalArgumentException("Estado inválido"))
                 .when(prestamoService).devolverPrestamo(prestamoId, estado);
 
-        // Llama al controlador
         ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
 
-        // Verifica que el código de estado sea 400
         assertEquals(400, response.getStatusCodeValue());
-        // Verifica el mensaje de error
         assertEquals(Collections.singletonMap("error", "Estado inválido"), response.getBody());
     }
 
     @Test
     void shouldReturnNotFoundWhenPrestamoDoesNotExist() {
-        // Datos de prueba
         String prestamoId = "999";
         String estado = "Entregado";
 
-        // Simula una excepción NoSuchElementException
         doThrow(new NoSuchElementException("Prestamo no encontrado"))
                 .when(prestamoService).devolverPrestamo(prestamoId, estado);
 
-        // Llama al controlador
         ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
 
-        // Verifica que el código de estado sea 404
         assertEquals(404, response.getStatusCodeValue());
-        // Verifica el mensaje de error
         assertEquals(Collections.singletonMap("error", "Prestamo no encontrado"), response.getBody());
     }
 
     @Test
     void shouldReturnInternalServerErrorForUnexpectedExceptions() {
-        // Datos de prueba
         String prestamoId = "123";
         String estado = "Entregado";
 
-        // Simula una excepción genérica
         doThrow(new RuntimeException("Error inesperado"))
                 .when(prestamoService).devolverPrestamo(prestamoId, estado);
 
-        // Llama al controlador
         ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
 
-        // Verifica que el código de estado sea 500
         assertEquals(500, response.getStatusCodeValue());
-        // Verifica el mensaje de error
         assertEquals(Collections.singletonMap("error", "Error inesperado"), response.getBody());
+    }
+
+    @Test
+    void shouldReturnPrestamoSuccessfully() {
+        String prestamoId = "1";
+        String estado = "Entregado";
+        Prestamo mockPrestamo = new Prestamo();
+        when(prestamoService.devolverPrestamo(prestamoId, estado)).thenReturn(mockPrestamo);
+
+        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(Collections.singletonMap("message", "Prestamo devuelto correctamente"), response.getBody());
+        verify(prestamoService).devolverPrestamo(prestamoId, estado);
+    }
+
+    @Test
+    void shouldReturnPrestamoSuccessfully1() {
+        String prestamoId = "1";
+        String estado = "Entregado";
+
+        Prestamo mockPrestamo = new Prestamo();
+        mockPrestamo.setId(prestamoId);
+        mockPrestamo.setEstado("Pendiente");
+        mockPrestamo.setFechaPrestamo(LocalDate.now().minusDays(7));
+
+        when(prestamoService.devolverPrestamo(prestamoId, estado)).thenAnswer(invocation -> {
+            mockPrestamo.setEstado("Devuelto");
+            mockPrestamo.setFechaDevolucion(LocalDate.now());
+            return mockPrestamo;
+        });
+
+        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(Collections.singletonMap("message", "Prestamo devuelto correctamente"), response.getBody());
+
+        assertEquals("Devuelto", mockPrestamo.getEstado());
+        assertNotNull(mockPrestamo.getFechaDevolucion());
+
+        verify(prestamoService).devolverPrestamo(prestamoId, estado);
+    }
+
+
+    @Test
+    void shouldHandleIllegalArgumentException() {
+        String prestamoId = "1";
+        String estado = "Entregado";
+        when(prestamoService.devolverPrestamo(prestamoId, estado))
+                .thenThrow(new IllegalArgumentException("Invalid argument"));
+
+        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(Collections.singletonMap("error", "Invalid argument"), response.getBody());
+    }
+
+    @Test
+    void shouldHandleNoSuchElementException() {
+        String prestamoId = "1";
+        String estado = "Entregado";
+        when(prestamoService.devolverPrestamo(prestamoId, estado))
+                .thenThrow(new NoSuchElementException("Prestamo not found"));
+
+        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(Collections.singletonMap("error", "Prestamo not found"), response.getBody());
+    }
+
+    @Test
+    void shouldHandleGeneralException() {
+        String prestamoId = "1";
+        String estado = "Entregado";
+        when(prestamoService.devolverPrestamo(prestamoId, estado))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        ResponseEntity<?> response = prestamoController.devolverPrestamo(prestamoId, estado);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(Collections.singletonMap("error", "Unexpected error"), response.getBody());
     }
 
 }
