@@ -1,4 +1,4 @@
-/*package com.bichotas.moduloprestamos;
+package com.bichotas.moduloprestamos;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,4 +12,4 @@ class ModuloPrestamosApplicationTests {
     public void applicationFailsToStartWithNullArgsV() {
         assertThrows(IllegalArgumentException.class, () -> ModuloPrestamosApplication.main(null));
     }
-}*/
+}
