@@ -287,6 +287,11 @@ public class PrestamoService {
         return prestamo;
     }
 
+    public void changeStatusOfLoanExpire(Prestamo prestamo){
+        prestamo.setEstado("Vencido");
+        prestamoRepository.save(prestamo);
+    }
+
     /*
     private boolean getEstadoHistory(String idLibro, String estado) {
         List<Prestamo> prestamos = prestamoRepository.getPrestamosByIdLibro(idLibro);
