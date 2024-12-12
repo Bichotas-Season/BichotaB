@@ -10,14 +10,30 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 /**
- * This class is in charge of configuring the CORS policy for the application.
+ * Configures CORS settings for the application.
+ * - Allowed Origins: Controlled via the `frontend.url` property.
+ * - Allowed Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD.
+ * - Allowed Headers: All headers are allowed.
+ * - Credentials: Allowed to be included in requests.
  */
 @Configuration
 public class CorsConfig {
-    
+
 
     private String frontendUrl = "*";
 
+    /**
+     * Configures a CORS filter bean to handle Cross-Origin Resource Sharing (CORS) requests.
+     *
+     * @return a {@link CorsFilter} configured with the specified CORS settings.
+     * <p>
+     * The CORS configuration allows:
+     * - Credentials to be included in requests.
+     * - Requests from the specified frontend URL.
+     * - All headers to be included in requests.
+     * - HTTP methods: GET, POST, PUT, DELETE, PATCH, OPTIONS, and HEAD.
+     * - A maximum age of 3600 seconds (1 hour) for preflight requests.
+     */
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -27,6 +43,7 @@ public class CorsConfig {
         config.addAllowedHeader("*");
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
         source.registerCorsConfiguration("/**", config);
+        config.setMaxAge(3600L);
         return new CorsFilter(source);
     }
 }
